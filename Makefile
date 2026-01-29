@@ -3,54 +3,69 @@
 # ================================
 
 PROJECT_NAME := cpp_2d_game
-CXX          := g++
-CXX_STANDARD := -std=c++20
 
-# Directory layout
 SRC_DIR      := src
 INC_DIR      := include
 BUILD_DIR    := build
+ASSETS_DIR   := assets
 
-APP_DIR      := $(SRC_DIR)/Application
-ENGINE_DIR   := $(SRC_DIR)/Engine
-GAMEPLAY_DIR := $(SRC_DIR)/Gameplay
-UTILS_DIR    := $(SRC_DIR)/Utils
+CXX_STANDARD := -std=c++20
+WARNINGS     := -Wall -Wextra -Wpedantic
+DEBUG_FLAGS  := -g -O0
+RELEASE_FLAGS:= -O2 -DNDEBUG
 
 # ================================
-# SDL3 Configuration
+# Platform Detection
 # ================================
-# Adjust SDL3_PATH if SDL3 is not system-installed
 
-SDL3_PATH    := C:/SDL3/x86_64-w64-mingw32
-SDL3_INC     := $(SDL3_PATH)/include
-SDL3_LIB     := -L$(SDL3_PATH)/lib -lSDL3
-SDL3_DLL     := $(SDL3_PATH)/bin/SDL3.dll
+UNAME_S := $(shell uname -s)
+
+# ================================
+# Compiler & SDL Configuration
+# ================================
+
+ifeq ($(UNAME_S),Darwin)
+    # -------- macOS (Homebrew SDL3) --------
+    CXX := clang++
+
+    SDL_CFLAGS := $(shell pkg-config --cflags sdl3)
+    SDL_LIBS   := $(shell pkg-config --libs sdl3)
+
+    PLATFORM_LIBS := $(SDL_LIBS)
+    PLATFORM_INCLUDES := $(SDL_CFLAGS)
+
+    TARGET := $(BUILD_DIR)/$(PROJECT_NAME)
+
+else
+    # -------- Windows (MinGW SDL3) --------
+    CXX := g++
+
+    SDL3_PATH ?= C:/SDL3/x86_64-w64-mingw32
+    SDL3_INC  := $(SDL3_PATH)/include
+    SDL3_LIBS := -L$(SDL3_PATH)/lib -lSDL3
+    SDL3_DLL  := $(SDL3_PATH)/bin/SDL3.dll
+
+    PLATFORM_LIBS := $(SDL3_LIBS)
+    PLATFORM_INCLUDES := -I$(SDL3_INC)
+
+    TARGET := $(BUILD_DIR)/$(PROJECT_NAME).exe
+endif
 
 # ================================
 # Compiler Flags
 # ================================
 
-WARNINGS     := -Wall -Wextra -Wpedantic
-DEBUG_FLAGS  := -g -O0
-RELEASE_FLAGS:= -O2 -DNDEBUG
-
-INCLUDES     := -I$(INC_DIR) -I$(SDL3_INC)
-
-CXXFLAGS     := $(CXX_STANDARD) $(WARNINGS) $(DEBUG_FLAGS) $(INCLUDES)
+CXXFLAGS := $(CXX_STANDARD) \
+            $(WARNINGS) \
+            $(DEBUG_FLAGS) \
+            -I$(INC_DIR) \
+            $(PLATFORM_INCLUDES)
 
 # ================================
 # Source Files
 # ================================
 
-APP_SRC      := $(wildcard $(APP_DIR)/*.cpp)
-ENGINE_SRC   := $(wildcard $(ENGINE_DIR)/*.cpp)
-GAMEPLAY_SRC := $(wildcard $(GAMEPLAY_DIR)/*.cpp)
-UTILS_SRC    := $(wildcard $(UTILS_DIR)/*.cpp)
-
-SRC_FILES    := $(APP_SRC) \
-                $(ENGINE_SRC) \
-                $(GAMEPLAY_SRC) \
-                $(UTILS_SRC)
+SRC_FILES := $(shell find $(SRC_DIR) -name "*.cpp")
 
 # ================================
 # Object Files
@@ -62,42 +77,76 @@ OBJ_FILES := $(SRC_FILES:%.cpp=$(BUILD_DIR)/%.o)
 # Default Target
 # ================================
 
-all: $(BUILD_DIR) copy_assets $(BUILD_DIR)/$(PROJECT_NAME).exe
+all: directories copy_assets $(TARGET)
 
 # ================================
 # Build Rules
 # ================================
 
-copy_assets:
-	mkdir -p $(BUILD_DIR)/assets
-	cp $(SDL3_DLL) $(BUILD_DIR)/ 2>/dev/null || echo "Warning: SDL3.dll not found in $(SDL3_PATH)/bin"
-	cp -r assets/* $(BUILD_DIR)/assets/
-
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
-	mkdir -p $(BUILD_DIR)/$(APP_DIR)
-	mkdir -p $(BUILD_DIR)/$(ENGINE_DIR)
-	mkdir -p $(BUILD_DIR)/$(GAMEPLAY_DIR)
-	mkdir -p $(BUILD_DIR)/$(UTILS_DIR)
+$(TARGET): $(OBJ_FILES)
+	@echo "Linking executable"
+	@$(CXX) $(OBJ_FILES) -o $@ $(PLATFORM_LIBS)
+	@echo "Build Successful!"
 
 $(BUILD_DIR)/%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	@mkdir -p $(dir $@)
+	@echo "Compiling $<"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/$(PROJECT_NAME).exe: $(OBJ_FILES)
-	$(CXX) $(OBJ_FILES) -o $@ $(SDL3_LIB)
+# ================================
+# Directory Setup
+# ================================
+
+directories:
+	@echo "Creating build directory"
+	@mkdir -p $(BUILD_DIR)
+
+# ================================
+# Assets & Runtime Dependencies
+# ================================
+
+copy_assets:
+	@echo "Copying assets"
+	@mkdir -p $(BUILD_DIR)/$(ASSETS_DIR)
+	@if  [ -d "$(ASSETS_DIR)" ] && [ "$$(ls -A $(ASSETS_DIR) 2>/dev/null)" ]; then \
+		cp -r $(ASSETS_DIR)/* $(BUILD_DIR)/$(ASSETS_DIR)/; \
+	else \
+		echo "Warning: assets folder missing"; \
+	fi
+
+	@if [ "$(UNAME_S)" = "Darwin" ]; then \
+		echo "macOS: no runtime SDL copy needed"; \
+	else \
+		echo "Copying SDL3.dll"; \
+		cp $(SDL3_DLL) $(BUILD_DIR)/ 2>/dev/null || echo "Warning: SDL3.dll not found"; \
+	fi
+
+ifeq ($(UNAME_S),Darwin)
+	@echo "macOS: no runtime SDL copy needed"
+else
+	@echo "Copying SDL3.dll"
+	@cp $(SDL3_DLL) $(BUILD_DIR)/ 2>/dev/null || echo "Warning: SDL3.dll not found"
+endif
+
+# ================================
+# Test
+# ================================
+
+test:
+	@echo "No tests configured yet"
 
 # ================================
 # Run
 # ================================
 
 run: all
-	$(BUILD_DIR)/$(PROJECT_NAME).exe
+	$(TARGET)
 
 # ================================
 # Release Build
 # ================================
 
-release: CXXFLAGS := $(CXX_STANDARD) $(WARNINGS) $(RELEASE_FLAGS) $(INCLUDES)
+release: CXXFLAGS := $(CXX_STANDARD) $(WARNINGS) $(RELEASE_FLAGS) -I$(INC_DIR) $(PLATFORM_INCLUDES)
 release: clean all
 
 # ================================
@@ -105,6 +154,8 @@ release: clean all
 # ================================
 
 clean:
-	rm -rf $(BUILD_DIR)
+	@echo "Cleaning build directory"
+	@rm -rf $(BUILD_DIR)
+	@echo "Build directory cleaned"
 
-.PHONY: all run clean release copy_assets
+.PHONY: all clean run release test copy_assets directories
