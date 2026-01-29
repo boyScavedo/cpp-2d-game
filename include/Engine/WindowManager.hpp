@@ -16,7 +16,7 @@ namespace Engine
     class WindowManager
     {
     public:
-        WindowManager(const std::string &title, int width, int height);
+        WindowManager(const std::string &title, int width = 0, int height = 0);
         ~WindowManager();
 
         // Disable copying to prevent multiple windows or double-frees
@@ -24,6 +24,7 @@ namespace Engine
         WindowManager &operator=(const WindowManager &) = delete;
 
         bool isRunning() const { return m_running; }
+        SDL_Renderer *getRenderer() const { return m_renderer.get(); }
         void pollEvents();
         void render();
 
