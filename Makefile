@@ -111,7 +111,14 @@ copy_assets:
 	@if  [ -d "$(ASSETS_DIR)" ] && [ "$$(ls -A $(ASSETS_DIR) 2>/dev/null)" ]; then \
 		cp -r $(ASSETS_DIR)/* $(BUILD_DIR)/$(ASSETS_DIR)/; \
 	else \
-		@echo "Warning: assets folder missing"; \
+		echo "Warning: assets folder missing"; \
+	fi
+
+	@if [ "$(UNAME_S)" = "Darwin" ]; then \
+		echo "macOS: no runtime SDL copy needed"; \
+	else \
+		echo "Copying SDL3.dll"; \
+		cp $(SDL3_DLL) $(BUILD_DIR)/ 2>/dev/null || echo "Warning: SDL3.dll not found"; \
 	fi
 
 ifeq ($(UNAME_S),Darwin)
