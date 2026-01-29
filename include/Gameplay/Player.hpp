@@ -1,29 +1,46 @@
 #pragma once
 #include <SDL3/SDL.h>
 
-const float PLAYER_WIDTH = 50.0f;
-const float PLAYER_HEIGHT = 50.0f;
-
 namespace Gameplay
 {
     class Player
     {
     public:
-        Player(float x, float y) : m_rect({x, y, PLAYER_WIDTH, PLAYER_HEIGHT}) {}
+        static constexpr float WIDTH = 50.0f;
+        static constexpr float HEIGHT = 50.0f;
+
+        Player(float x, float y) : m_rect({x, y, WIDTH, HEIGHT}) {}
 
         void update(float deltaTime)
         {
             const float speed = 400.0f; // Pixels per second
             const bool *state = SDL_GetKeyboardState(NULL);
 
-            if (state[SDL_SCANCODE_W] && m_rect.y > 0)
+            if (state[SDL_SCANCODE_W])
                 m_rect.y -= speed * deltaTime;
-            if (state[SDL_SCANCODE_S] && !(m_rect.y > (720 - PLAYER_HEIGHT)))
+            if (state[SDL_SCANCODE_S])
                 m_rect.y += speed * deltaTime;
-            if (state[SDL_SCANCODE_A] && m_rect.x > 0)
+            if (state[SDL_SCANCODE_A])
                 m_rect.x -= speed * deltaTime;
-            if (state[SDL_SCANCODE_D] && !(m_rect.x > (1280 - PLAYER_WIDTH)))
+            if (state[SDL_SCANCODE_D])
                 m_rect.x += speed * deltaTime;
+
+            if (m_rect.x < 0)
+            {
+                m_rect.x = 0;
+            }
+            if (m_rect.x > 1280 - WIDTH)
+            {
+                m_rect.x = 1280 - WIDTH;
+            }
+            if (m_rect.y < 0)
+            {
+                m_rect.y = 0;
+            }
+            if (m_rect.y > 720 - HEIGHT)
+            {
+                m_rect.y = 720 - HEIGHT;
+            }
         }
 
         void draw(SDL_Renderer *renderer)

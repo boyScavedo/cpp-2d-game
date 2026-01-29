@@ -76,17 +76,4 @@ namespace Engine
         }
     }
 
-    void WindowManager::render()
-    {
-        SDL_SetRenderDrawColor(m_renderer.get(), 0, 0, 0, 255);
-        SDL_RenderClear(m_renderer.get());
-
-        SDL_SetRenderDrawColor(m_renderer.get(), 255, 0, 0, 255);
-
-        SDL_FRect rect = {0, 0, 1280, 720};
-        SDL_RenderFillRect(m_renderer.get(), &rect);
-
-        SDL_RenderPresent(m_renderer.get());
-    }
-
 } // namespace Engine

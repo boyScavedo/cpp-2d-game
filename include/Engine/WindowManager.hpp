@@ -26,7 +26,6 @@ namespace Engine
         bool isRunning() const { return m_running; }
         SDL_Renderer *getRenderer() const { return m_renderer.get(); }
         void pollEvents();
-        void render();
 
     private:
         std::unique_ptr<SDL_Window, SDLDeleter> m_window;

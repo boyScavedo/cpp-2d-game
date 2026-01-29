@@ -84,32 +84,45 @@ all: directories copy_assets $(TARGET)
 # ================================
 
 $(TARGET): $(OBJ_FILES)
-	$(CXX) $(OBJ_FILES) -o $@ $(PLATFORM_LIBS)
+	@echo "Linking executable"
+	@$(CXX) $(OBJ_FILES) -o $@ $(PLATFORM_LIBS)
+	@echo "Build Successfull!"
 
 $(BUILD_DIR)/%.o: %.cpp
-	mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	@mkdir -p $(dir $@)
+	@echo "Compiling $<"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # ================================
 # Directory Setup
 # ================================
 
 directories:
-	mkdir -p $(BUILD_DIR)
+	@echo "Creating build directory"
+	@mkdir -p $(BUILD_DIR)
 
 # ================================
 # Assets & Runtime Dependencies
 # ================================
 
 copy_assets:
-	mkdir -p $(BUILD_DIR)/$(ASSETS_DIR)
-	cp -r $(ASSETS_DIR)/* $(BUILD_DIR)/$(ASSETS_DIR)/ 2>/dev/null || echo "Warning: assets folder missing"
+	@echo "Copying assets"
+	@mkdir -p $(BUILD_DIR)/$(ASSETS_DIR)
+	@cp -r $(ASSETS_DIR)/* $(BUILD_DIR)/$(ASSETS_DIR)/ 2>/dev/null || echo "Warning: assets folder missing"
 
 ifeq ($(UNAME_S),Darwin)
 	@echo "macOS: no runtime SDL copy needed"
 else
-	cp $(SDL3_DLL) $(BUILD_DIR)/ 2>/dev/null || echo "Warning: SDL3.dll not found"
+	@echo "Copying SDL3.dll"
+	@cp $(SDL3_DLL) $(BUILD_DIR)/ 2>/dev/null || echo "Warning: SDL3.dll not found"
 endif
+
+# ================================
+# Test
+# ================================
+
+test:
+	@echo "No tests configured yet"
 
 # ================================
 # Run
@@ -130,6 +143,8 @@ release: clean all
 # ================================
 
 clean:
-	rm -rf $(BUILD_DIR)
+	@echo "Cleaning build directory"
+	@rm -rf $(BUILD_DIR)
+	@echo "Build directory cleaned"
 
-.PHONY: all clean run release copy_assets directories
+.PHONY: all clean run release test copy_assets directories

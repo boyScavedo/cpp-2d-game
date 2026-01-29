@@ -8,6 +8,12 @@ int main(int argc, char *argv[])
     (void)argv;
 
     Engine::WindowManager game("2D Movement Demo");
+
+    if (!game.isRunning())
+    {
+        return 1;
+    }
+
     Gameplay::Player player(100.0f, 100.0f);
 
     Uint64 lastTime = SDL_GetTicks();
