@@ -46,6 +46,7 @@
 - Open the project in Visual Studio Code
 - Open the Terminal
 - Run `make`
+- Run `make clean` to clean the build for the next build
 
 # Project Structure
 
