@@ -87,3 +87,13 @@ project/
   - The dev branch is the branch that is used for development. It is a copy of the main branch, but with the code that is being worked on.
 - feature/branch-name
   - Branches that are used for developing new features or bug fixes.
+
+# Contribution
+
+- Clone the project
+- Create a branch for your feature/bug fix
+  `git checkout -b feature/branch-name`
+- Make your changes
+- Commit your changes
+- Push your changes
+- Create a pull request
