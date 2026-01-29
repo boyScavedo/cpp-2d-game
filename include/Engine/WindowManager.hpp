@@ -19,12 +19,32 @@ namespace Engine
         WindowManager(const std::string &title, int width = 0, int height = 0);
         ~WindowManager();
 
-        // Disable copying to prevent multiple windows or double-frees
+        /**
+ * @brief Disables copy construction to prevent creating multiple managers that would share or double-free SDL resources.
+ */
         WindowManager(const WindowManager &) = delete;
-        WindowManager &operator=(const WindowManager &) = delete;
+        /**
+ * @brief Disable copy assignment for WindowManager.
+ *
+ * Prevents assigning one WindowManager to another to avoid duplicating ownership of
+ * the underlying SDL resources and the risk of double destruction.
+ */
+WindowManager &operator=(const WindowManager &) = delete;
 
-        bool isRunning() const { return m_running; }
-        SDL_Renderer *getRenderer() const { return m_renderer.get(); }
+        /**
+ * @brief Indicates whether the window manager is currently running.
+ *
+ * @return `true` if the window manager is running, `false` otherwise.
+ */
+bool isRunning() const { return m_running; }
+        /**
+ * @brief Accesses the SDL renderer managed by the WindowManager.
+ *
+ * Returns a raw pointer to the internally managed SDL_Renderer instance.
+ *
+ * @return SDL_Renderer* Pointer to the managed renderer, or `nullptr` if no renderer is initialized.
+ */
+SDL_Renderer *getRenderer() const { return m_renderer.get(); }
         void pollEvents();
         void render();
 

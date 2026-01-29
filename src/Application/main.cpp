@@ -1,6 +1,15 @@
 #include "Engine/WindowManager.hpp"
 #include "Gameplay/Player.hpp"
 
+/**
+ * @brief Entry point that runs the 2D movement demo application.
+ *
+ * Initializes the windowing system and player, enters the main loop to process events,
+ * update the player using frame delta time, render a dark red background and the player,
+ * and presents frames until the window manager indicates the application should stop.
+ *
+ * @return int 0 on normal termination.
+ */
 int main(int argc, char *argv[])
 {
     // Suppress unused parameter warnings
