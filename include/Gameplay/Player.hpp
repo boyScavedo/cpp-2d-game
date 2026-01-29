@@ -45,6 +45,10 @@ namespace Gameplay
 
         void draw(SDL_Renderer *renderer)
         {
+            if (!renderer)
+            {
+                return;
+            }
             SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green square
             SDL_RenderFillRect(renderer, &m_rect);
         }

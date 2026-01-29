@@ -86,7 +86,7 @@ all: directories copy_assets $(TARGET)
 $(TARGET): $(OBJ_FILES)
 	@echo "Linking executable"
 	@$(CXX) $(OBJ_FILES) -o $@ $(PLATFORM_LIBS)
-	@echo "Build Successfull!"
+	@echo "Build Successful!"
 
 $(BUILD_DIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
@@ -108,7 +108,11 @@ directories:
 copy_assets:
 	@echo "Copying assets"
 	@mkdir -p $(BUILD_DIR)/$(ASSETS_DIR)
-	@cp -r $(ASSETS_DIR)/* $(BUILD_DIR)/$(ASSETS_DIR)/ 2>/dev/null || echo "Warning: assets folder missing"
+	@if  [ -d "$(ASSETS_DIR)" ] && [ "$$(ls -A $(ASSETS_DIR) 2>/dev/null)" ]; then \
+		cp -r $(ASSETS_DIR)/* $(BUILD_DIR)/$(ASSETS_DIR)/; \
+	else \
+		@echo "Warning: assets folder missing"; \
+	fi
 
 ifeq ($(UNAME_S),Darwin)
 	@echo "macOS: no runtime SDL copy needed"

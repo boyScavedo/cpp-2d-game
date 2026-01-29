@@ -1,5 +1,4 @@
 #include "Engine/WindowManager.hpp"
-#include <iostream>
 
 namespace Engine
 {
