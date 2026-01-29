@@ -3,5 +3,3 @@ build/
 *.o
 *.exe
 *.out
-
-Makefile
