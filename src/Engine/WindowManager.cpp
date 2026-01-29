@@ -78,7 +78,6 @@ namespace Engine
 
     void WindowManager::render()
     {
-        // Set color to Red (R: 255, G: 0, B: 0, A: 255)
         SDL_SetRenderDrawColor(m_renderer.get(), 0, 0, 0, 255);
         SDL_RenderClear(m_renderer.get());
 

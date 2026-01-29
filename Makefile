@@ -40,7 +40,7 @@ else
     # -------- Windows (MinGW SDL3) --------
     CXX := g++
 
-    SDL3_PATH := C:/SDL3/x86_64-w64-mingw32
+    SDL3_PATH ?= C:/SDL3/x86_64-w64-mingw32
     SDL3_INC  := $(SDL3_PATH)/include
     SDL3_LIBS := -L$(SDL3_PATH)/lib -lSDL3
     SDL3_DLL  := $(SDL3_PATH)/bin/SDL3.dll
@@ -104,6 +104,7 @@ directories:
 copy_assets:
 	mkdir -p $(BUILD_DIR)/$(ASSETS_DIR)
 	cp -r $(ASSETS_DIR)/* $(BUILD_DIR)/$(ASSETS_DIR)/ 2>/dev/null || echo "Warning: assets folder missing"
+
 ifeq ($(UNAME_S),Darwin)
 	@echo "macOS: no runtime SDL copy needed"
 else

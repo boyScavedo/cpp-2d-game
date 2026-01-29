@@ -12,6 +12,8 @@ int main(int argc, char *argv[])
 
     Uint64 lastTime = SDL_GetTicks();
 
+    SDL_Renderer *renderer = game.getRenderer();
+
     while (game.isRunning())
     {
         Uint64 currentTime = SDL_GetTicks();
@@ -22,15 +24,15 @@ int main(int argc, char *argv[])
 
         player.update(deltaTime);
 
-        SDL_SetRenderDrawColor(game.getRenderer(), 0, 0, 0, 255);
-        SDL_RenderClear(game.getRenderer());
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
 
-        SDL_SetRenderDrawColor(game.getRenderer(), 50, 0, 0, 255); // Dark red
+        SDL_SetRenderDrawColor(renderer, 50, 0, 0, 255); // Dark red
         SDL_FRect background = {0, 0, 1280, 720};
-        SDL_RenderFillRect(game.getRenderer(), &background);
+        SDL_RenderFillRect(renderer, &background);
 
-        player.draw(game.getRenderer());
-        SDL_RenderPresent(game.getRenderer());
+        player.draw(renderer);
+        SDL_RenderPresent(renderer);
     }
 
     return 0;
