@@ -11,13 +11,17 @@ namespace Engine
 
     public:
         /**
-         * @brief Polls SDL events and updates the stored input state.
+         * @brief Polls system input and updates the stored input state.
          *
-         * Updates movement and action flags (up, down, left, right, attack) from the current keyboard state
-         * and sets the `quit` flag if an SDL quit event is received.
+         * Updates directional and action flags and records high-level input events:
+         * - Sets `quit` when a quit event is received.
+         * - Sets `toggleFullScreen` when the F11 key is pressed.
+         * - Updates `up`, `down`, `left`, `right` from the W/S/A/D keys.
+         * - Updates `jump` from the Space key.
+         * - Updates `attack` from the left mouse button.
          *
-         * @return Common::InputState The updated input state containing the current values of
-         * `up`, `down`, `left`, `right`, `attack`, and `quit`.
+         * @return Common::InputState The updated input state reflecting the current values of
+         * `up`, `down`, `left`, `right`, `jump`, `attack`, `toggleFullScreen`, and `quit`.
          */
         Common::InputState update()
         {

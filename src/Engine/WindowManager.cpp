@@ -51,6 +51,14 @@ namespace Engine
         SDL_SetWindowAspectRatio(m_window.get(), aspect, aspect);
     }
 
+    /**
+     * @brief Toggle the managed window between fullscreen and windowed modes when requested.
+     *
+     * If a valid SDL_Window exists and the provided input requests a fullscreen toggle,
+     * this method switches the window's fullscreen state.
+     *
+     * @param input Input state whose `toggleFullScreen` flag triggers the toggle when true.
+     */
     void WindowManager::update(const Common::InputState &input)
     {
         SDL_Window *window = getSDLWindow();
@@ -72,6 +80,18 @@ namespace Engine
         }
     }
 
+    /**
+     * @brief Updates the frame rate counter and refreshes the window title once per second.
+     *
+     * Increments the supplied frame counter and, when more than 1000 milliseconds have
+     * elapsed since lastFpsUpdate, sets the SDL window title to Common::WINDOW_TITLE_PREFIX
+     * followed by the current FPS value, resets the frame counter to zero, and updates
+     * lastFpsUpdate to the current time.
+     *
+     * @param currentTime Current time in milliseconds.
+     * @param lastFpsUpdate Reference to the timestamp of the last title update; updated to currentTime when a title refresh occurs.
+     * @param fps Reference to the accumulated frame count; incremented on each call and reset to 0 after a title refresh.
+     */
     void WindowManager::fpsCounter(const Uint64 &currentTime, Uint64 &lastFpsUpdate, Uint64 &fps)
     {
         fps++;
