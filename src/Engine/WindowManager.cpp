@@ -79,6 +79,10 @@ namespace Engine
         if (currentTime > lastFpsUpdate + 1000)
         {
             SDL_Window *window = getSDLWindow();
+
+            if (!window)
+                return;
+
             lastFpsUpdate = currentTime;
             std::string title = Common::WINDOW_TITLE_PREFIX + std::to_string(fps);
             SDL_SetWindowTitle(window, title.c_str());

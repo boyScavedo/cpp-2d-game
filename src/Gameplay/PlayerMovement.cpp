@@ -54,18 +54,22 @@ void Gameplay::PlayerMovement::update(float deltaTime, const Common::InputState 
     if (m_x < 0)
     {
         m_x = 0;
+        m_velocityX = 0;
     }
     if (m_x > Common::SCREEN_WIDTH - Common::PLAYER_WIDTH)
     {
         m_x = Common::SCREEN_WIDTH - Common::PLAYER_WIDTH;
+        m_velocityX = 0;
     }
     if (m_y < 0)
     {
         m_y = 0;
+        m_velocityY = 0;
     }
     if (m_y > Common::SCREEN_HEIGHT - Common::PLAYER_HEIGHT)
     {
         m_y = Common::SCREEN_HEIGHT - Common::PLAYER_HEIGHT;
+        m_velocityY = 0;
         m_canJump = true;
     }
 }
