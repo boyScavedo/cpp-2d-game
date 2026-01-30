@@ -7,38 +7,69 @@
 
 namespace Engine
 {
+    /**
+     * @class Renderer
+     * @brief Handles rendering operations using SDL, managing textures and drawing commands.
+     *
+     * The Renderer class creates and manages an SDL_Renderer, caches textures, and provides methods
+     * to draw render commands with support for parallax scrolling.
+     */
     class Renderer
     {
     public:
+        /**
+         * @brief Constructs a Renderer with an SDL window.
+         * @param window The SDL window to associate with the renderer.
+         */
         Renderer(SDL_Window *window);
+
+        /**
+         * @brief Destroys the Renderer and cleans up SDL resources.
+         */
         ~Renderer();
 
         /**
-         * @brief Disable copy construction to prevent multiple instances from sharing or duplicating underlying SDL resources.
+         * @brief Deleted copy constructor to prevent multiple instances from sharing SDL resources.
          */
         Renderer(const Renderer &) = delete;
+
         /**
-         * @brief Deleted copy assignment operator to prevent copying of Renderer instances.
-         *
-         * Copying is disallowed to ensure unique ownership of the underlying SDL renderer and associated resources.
+         * @brief Deleted copy assignment operator to ensure unique ownership of SDL resources.
          */
         Renderer &operator=(const Renderer &) = delete;
+
         /**
-         * @brief Disables move construction for Renderer.
-         *
-         * Prevents moving a Renderer instance to preserve unique ownership of the internal SDL resources
-         * and texture cache.
+         * @brief Deleted move constructor to preserve unique ownership of SDL resources.
          */
         Renderer(Renderer &&) = delete;
+
         /**
-         * @brief Disable move assignment for Renderer.
-         *
-         * Prevents transferring ownership of the Renderer and its internal SDL resources by deleting the move assignment operator.
+         * @brief Deleted move assignment operator to prevent transferring SDL resource ownership.
          */
         Renderer &operator=(Renderer &&) = delete;
-        // TODO: add textures, bool loadTexture(int id, const std::string& path);
+        /**
+         * @brief Loads a texture from a file and caches it with the given ID.
+         * @param id The texture ID to associate with the loaded texture.
+         * @param path The file path to the texture image.
+         * @return True if the texture was loaded successfully, false otherwise.
+         */
+        bool loadTexture(Common::TextureID id, const std::string &path);
+
+        /**
+         * @brief Prepares the renderer for drawing a new frame.
+         */
         void beginFrame();
-        void drawCommands(const std::vector<Common::RenderCommand> &commands);
+
+        /**
+         * @brief Draws a list of render commands with an optional camera offset for parallax effects.
+         * @param commands The vector of render commands to draw.
+         * @param cameraOffsetX The horizontal camera offset to apply.
+         */
+        void drawCommands(const std::vector<Common::RenderCommand> &commands, float cameraOffsetX = 0.0f);
+
+        /**
+         * @brief Finalizes and presents the current frame to the screen.
+         */
         void endFrame();
 
     private:

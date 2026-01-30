@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "Gameplay/PlayerMovement.hpp"
 
 #include "Common/Types.hpp"
@@ -7,6 +9,13 @@
 
 namespace Gameplay
 {
+    /**
+     * @class Player
+     * @brief Represents the player character in the game, handling movement and rendering.
+     *
+     * The Player class manages the player's position, updates movement based on input, and provides
+     * render commands for drawing the player on screen.
+     */
     class Player
     {
     public:
@@ -28,6 +37,13 @@ namespace Gameplay
          * @return Common::RenderCommand A command containing position (x, y), size (width, height), and the `Common::TextureID::TEX_PLAYER` texture identifier.
          */
         Common::RenderCommand getRenderCommand() const;
+
+        /**
+         * @brief Gets the player's current position.
+         *
+         * @return std::pair<float, float> A pair containing the x and y coordinates of the player.
+         */
+        std::pair<float, float> getPosition() const;
 
     private:
         PlayerMovement movement;

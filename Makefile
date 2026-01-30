@@ -28,8 +28,8 @@ ifeq ($(UNAME_S),Darwin)
     # -------- macOS (Homebrew SDL3) --------
     CXX := clang++
 
-    SDL_CFLAGS := $(shell pkg-config --cflags sdl3)
-    SDL_LIBS   := $(shell pkg-config --libs sdl3)
+    SDL_CFLAGS := $(shell pkg-config --cflags sdl3 sdl3-image)
+    SDL_LIBS   := $(shell pkg-config --libs sdl3 sdl3-image)
 
     PLATFORM_LIBS := $(SDL_LIBS)
     PLATFORM_INCLUDES := $(SDL_CFLAGS)
@@ -42,8 +42,9 @@ else
 
     SDL3_PATH ?= C:/SDL3/x86_64-w64-mingw32
     SDL3_INC  := $(SDL3_PATH)/include
-    SDL3_LIBS := -L$(SDL3_PATH)/lib -lSDL3
+    SDL3_LIBS := -L$(SDL3_PATH)/lib -lSDL3 -lSDL3_image
     SDL3_DLL  := $(SDL3_PATH)/bin/SDL3.dll
+    SDL3_IMAGE_DLL := $(SDL3_PATH)/bin/SDL3_image.dll
 
     PLATFORM_LIBS := $(SDL3_LIBS)
     PLATFORM_INCLUDES := -I$(SDL3_INC)
@@ -119,6 +120,8 @@ copy_assets:
 	else \
 		echo "Copying SDL3.dll"; \
 		cp $(SDL3_DLL) $(BUILD_DIR)/ 2>/dev/null || echo "Warning: SDL3.dll not found"; \
+		echo "Copying SDL3_image.dll"; \
+		cp $(SDL3_IMAGE_DLL) $(BUILD_DIR)/ 2>/dev/null || echo "Warning: SDL3_image.dll not found"; \
 	fi
 
 # ================================

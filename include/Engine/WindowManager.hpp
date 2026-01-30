@@ -24,7 +24,17 @@ namespace Engine
     class WindowManager
     {
     public:
+        /**
+         * @brief Constructs a WindowManager with the specified title and optional dimensions.
+         * @param title The title of the window.
+         * @param width The width of the window (default 0 for fullscreen or system default).
+         * @param height The height of the window (default 0 for fullscreen or system default).
+         */
         WindowManager(const std::string &title, int width = 0, int height = 0);
+
+        /**
+         * @brief Destroys the WindowManager and cleans up SDL resources.
+         */
         ~WindowManager();
 
         /**
