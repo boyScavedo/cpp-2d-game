@@ -26,9 +26,6 @@ void Gameplay::PlayerMovement::update(float deltaTime, const Common::InputState 
     {
         m_velocityY += gravity * deltaTime;
 
-        if (m_velocityY > terminalVelocity)
-            m_velocityY = terminalVelocity;
-
         if (m_velocityX > 0)
         {
             m_velocityX -= friction * deltaTime;
@@ -42,6 +39,8 @@ void Gameplay::PlayerMovement::update(float deltaTime, const Common::InputState 
                 m_velocityX = 0;
         }
     }
+    if (m_velocityY > terminalVelocity)
+        m_velocityY = terminalVelocity;
 
     if (input.jump && m_canJump)
     {

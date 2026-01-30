@@ -30,8 +30,6 @@ namespace Gameplay
         Common::RenderCommand getRenderCommand() const;
 
     private:
-        float width = Common::PLAYER_WIDTH;
-        float height = Common::PLAYER_HEIGHT;
         PlayerMovement movement;
     };
 } // namespace Gameplay
