@@ -10,6 +10,15 @@ namespace Engine
         Common::InputState m_state{};
 
     public:
+        /**
+         * @brief Polls SDL events and updates the stored input state.
+         *
+         * Updates movement and action flags (up, down, left, right, attack) from the current keyboard state
+         * and sets the `quit` flag if an SDL quit event is received.
+         *
+         * @return Common::InputState The updated input state containing the current values of
+         * `up`, `down`, `left`, `right`, `attack`, and `quit`.
+         */
         Common::InputState update()
         {
             m_state.toggleFullScreen = false;

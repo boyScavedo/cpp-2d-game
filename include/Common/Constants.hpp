@@ -7,7 +7,7 @@ namespace Common
     inline constexpr int SCREEN_HEIGHT = 720;
     inline constexpr int MINIMUM_SCREEN_WIDTH = 854;
     inline constexpr int MINIMUM_SCREEN_HEIGHT = 480;
-    inline constexpr const char *WINDOW_TITLE = "2D Roguelike-Metroidvania v0.0.1";
+    inline constexpr const char *WINDOW_TITLE = "2D Roguelike-Metroidvania v0.0.1 | FPS: ";
 
     // --- Physics & Gameplay Logic ---
     inline constexpr float TARGET_FPS = 60.0f;
