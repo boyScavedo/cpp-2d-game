@@ -1,5 +1,15 @@
 #include "Gameplay/PlayerMovement.hpp"
 
+/**
+ * @brief Updates the player's physics state and position based on input and elapsed time.
+ *
+ * Updates horizontal and vertical velocity using acceleration, gravity, and friction; clamps
+ * velocities to configured limits; applies a jump when allowed; integrates position; and
+ * enforces screen bounds. Landing on the bottom edge re-enables jumping.
+ *
+ * @param deltaTime Time elapsed since the last update in seconds.
+ * @param input Input state containing movement flags (`left`, `right`, `jump`) that drive motion.
+ */
 void Gameplay::PlayerMovement::update(float deltaTime, const Common::InputState &input)
 {
     if (input.left)
@@ -74,6 +84,12 @@ void Gameplay::PlayerMovement::update(float deltaTime, const Common::InputState 
     }
 }
 
+/**
+ * @brief Produces a render command for the player using its current position and size.
+ *
+ * @return Common::RenderCommand A render command initialized with the player's x and y position,
+ * width (Common::PLAYER_WIDTH), height (Common::PLAYER_HEIGHT), and texture ID (Common::TextureID::TEX_PLAYER).
+ */
 Common::RenderCommand Gameplay::PlayerMovement::getRenderCommand() const
 {
     return {m_x, m_y, Common::PLAYER_WIDTH, Common::PLAYER_HEIGHT, Common::TextureID::TEX_PLAYER}; // Texture Id at end
