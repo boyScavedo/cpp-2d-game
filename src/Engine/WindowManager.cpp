@@ -4,6 +4,18 @@
 
 namespace Engine
 {
+    /**
+     * @brief Initialize the WindowManager and create an SDL window with the requested size.
+     *
+     * Validates the requested dimensions, initializes SDL's video subsystem, creates a resizable
+     * SDL_Window, and configures the window's minimum size and aspect ratio. If validation,
+     * SDL initialization, or window creation fails this constructor returns early; on window
+     * creation failure SDL is shut down via SDL_Quit().
+     *
+     * @param title Window title shown in the window decorations.
+     * @param requestedWidth Desired window width in pixels; must be greater than 0.
+     * @param requestedHeight Desired window height in pixels; must be greater than 0.
+     */
     WindowManager::WindowManager(const std::string &title, int requestedWidth, int requestedHeight)
     {
         if (requestedWidth <= 0 || requestedHeight <= 0)
@@ -35,6 +47,11 @@ namespace Engine
         SDL_SetWindowAspectRatio(m_window.get(), aspect, aspect);
     }
 
+    /**
+     * @brief Cleans up WindowManager resources.
+     *
+     * If the SDL subsystem was initialized by this manager, shuts down SDL by calling SDL_Quit().
+     */
     WindowManager::~WindowManager()
     {
         if (m_sdlInitialized)
