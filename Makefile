@@ -121,13 +121,6 @@ copy_assets:
 		cp $(SDL3_DLL) $(BUILD_DIR)/ 2>/dev/null || echo "Warning: SDL3.dll not found"; \
 	fi
 
-ifeq ($(UNAME_S),Darwin)
-	@echo "macOS: no runtime SDL copy needed"
-else
-	@echo "Copying SDL3.dll"
-	@cp $(SDL3_DLL) $(BUILD_DIR)/ 2>/dev/null || echo "Warning: SDL3.dll not found"
-endif
-
 # ================================
 # Test
 # ================================

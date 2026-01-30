@@ -1,44 +1,68 @@
+#include <vector>
+
+#include "Engine/InputManager.hpp"
 #include "Engine/WindowManager.hpp"
+#include "Engine/Renderer.hpp"
+
 #include "Gameplay/Player.hpp"
 
+#include "Common/Constants.hpp"
+
+/**
+ * @brief Application entry point that initializes engine subsystems and runs the main game loop.
+ *
+ * Initializes the window, input manager, renderer, and player; then enters a loop that
+ * performs time-stepping, input polling (including quit handling), game update, and
+ * frame command collection/rendering until the application exits.
+ *
+ * @return int Exit code; `0` indicates successful termination.
+ */
 int main(int argc, char *argv[])
 {
     // Suppress unused parameter warnings
     (void)argc;
     (void)argv;
 
-    Engine::WindowManager game("2D Movement Demo");
-
-    if (!game.isRunning())
-    {
-        return 1;
-    }
+    Engine::WindowManager window("2D Game", Common::MINIMUM_SCREEN_WIDTH, Common::MINIMUM_SCREEN_HEIGHT);
+    Engine::InputManager inputSystem;
+    Engine::Renderer renderer(window.getSDLWindow());
 
     Gameplay::Player player(100.0f, 100.0f);
 
     Uint64 lastTime = SDL_GetTicks();
-
-    SDL_Renderer *renderer = game.getRenderer();
-
-    while (game.isRunning())
+    bool running = true;
+    while (running)
     {
+
+        std::vector<Common::RenderCommand> frameCommands;
+        frameCommands.reserve(16);
+
         Uint64 currentTime = SDL_GetTicks();
         float deltaTime = (currentTime - lastTime) / 1000.0f;
         lastTime = currentTime;
 
-        game.pollEvents();
+        if (deltaTime > 0.1f)
+        {
+            deltaTime = 0.1f;
+        }
 
-        player.update(deltaTime);
+        Common::InputState currentInput = inputSystem.update();
 
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer);
+        if (currentInput.quit)
+        {
+            running = false;
+        }
 
-        SDL_SetRenderDrawColor(renderer, 50, 0, 0, 255); // Dark red
-        SDL_FRect background = {0, 0, 1280, 720};
-        SDL_RenderFillRect(renderer, &background);
+        player.update(deltaTime, currentInput);
 
-        player.draw(renderer);
-        SDL_RenderPresent(renderer);
+        renderer.beginFrame();
+
+        frameCommands.clear();
+        frameCommands.push_back(player.getRenderCommand());
+
+        renderer.drawCommands(frameCommands);
+
+        renderer.endFrame();
     }
 
     return 0;
