@@ -3,6 +3,8 @@
 #include <memory>
 #include <string>
 
+#include "Engine/InputManager.hpp"
+
 namespace Engine
 {
 
@@ -24,6 +26,8 @@ namespace Engine
 
         // Returns the underlying SDL_Window point. Caller must NOT free this pointer.
         SDL_Window *getSDLWindow() const { return m_window.get(); }
+
+        void update(const Common::InputState &input);
 
     private:
         std::unique_ptr<SDL_Window, SDLDeleter> m_window;

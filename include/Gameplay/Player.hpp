@@ -9,46 +9,18 @@ namespace Gameplay
     public:
         static constexpr float WIDTH = 50.0f;
         static constexpr float HEIGHT = 50.0f;
+        static constexpr float GRAVITY = 980.0f;       // Pixels per second squared
+        static constexpr float JUMP_VELOCITY = 500.0f; // Pixels per second
 
-        Player(float x, float y) : m_x(x), m_y(y) {}
+        Player(float x, float y) : m_x(x), m_y(y), m_velocityY(0.0f) {}
 
-        void update(float deltaTime, const Common::InputState &input)
-        {
-            const float speed = 400.0f; // Pixels per second
+        void update(float deltaTime, const Common::InputState &input);
 
-            if (input.up)
-                m_y -= speed * deltaTime;
-            if (input.down)
-                m_y += speed * deltaTime;
-            if (input.left)
-                m_x -= speed * deltaTime;
-            if (input.right)
-                m_x += speed * deltaTime;
-
-            if (m_x < 0)
-            {
-                m_x = 0;
-            }
-            if (m_x > Common::SCREEN_WIDTH - WIDTH)
-            {
-                m_x = Common::SCREEN_WIDTH - WIDTH;
-            }
-            if (m_y < 0)
-            {
-                m_y = 0;
-            }
-            if (m_y > Common::SCREEN_HEIGHT - HEIGHT)
-            {
-                m_y = Common::SCREEN_HEIGHT - HEIGHT;
-            }
-        }
-
-        Common::RenderCommand getRenderCommand() const
-        {
-            return {m_x, m_y, WIDTH, HEIGHT, Common::TextureID::TEX_PLAYER}; // Texture Id at end
-        }
+        Common::RenderCommand getRenderCommand() const;
 
     private:
         float m_x, m_y;
+        float m_velocityX = 0, m_velocityY = 0;
+        bool canJump = false;
     };
 } // namespace Gameplay

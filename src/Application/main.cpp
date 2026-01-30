@@ -44,6 +44,8 @@ int main(int argc, char *argv[])
             running = false;
         }
 
+        window.update(currentInput);
+
         player.update(deltaTime, currentInput);
 
         renderer.beginFrame();

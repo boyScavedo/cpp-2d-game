@@ -1,4 +1,5 @@
 #include "Engine/WindowManager.hpp"
+#include "Engine/InputManager.hpp"
 
 #include "Common/Constants.hpp"
 
@@ -34,6 +35,23 @@ namespace Engine
         SDL_SetWindowMinimumSize(m_window.get(), Common::MINIMUM_SCREEN_WIDTH, Common::MINIMUM_SCREEN_HEIGHT);
         float aspect = (float)windowW / (float)windowH;
         SDL_SetWindowAspectRatio(m_window.get(), aspect, aspect);
+    }
+
+    void WindowManager::update(const Common::InputState &input)
+    {
+        SDL_Window *window = getSDLWindow();
+        if (input.toggleFullScreen)
+        {
+            Uint32 flags = SDL_GetWindowFlags(window);
+            if (flags & SDL_WINDOW_FULLSCREEN)
+            {
+                SDL_SetWindowFullscreen(window, false);
+            }
+            else
+            {
+                SDL_SetWindowFullscreen(window, true);
+            }
+        }
     }
 
     WindowManager::~WindowManager()

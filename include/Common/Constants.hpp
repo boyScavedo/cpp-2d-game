@@ -12,6 +12,7 @@ namespace Common
     // --- Physics & Gameplay Logic ---
     inline constexpr float TARGET_FPS = 60.0f;
     inline constexpr float TIME_STEP = 1.0f / TARGET_FPS;
+    inline constexpr float GRAVITY = 980.0f;
 
     // --- Texture & Sprite IDs ---
     enum class TextureID : int
