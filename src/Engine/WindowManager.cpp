@@ -24,6 +24,7 @@ namespace Engine
         SDL_Window *window = SDL_CreateWindow(title.c_str(), windowW, windowH, SDL_WINDOW_RESIZABLE);
         if (!window)
         {
+            m_sdlInitialized = false;
             SDL_Quit();
             return;
         }
