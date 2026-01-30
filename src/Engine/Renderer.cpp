@@ -28,7 +28,7 @@ namespace Engine
         SDL_RenderClear(m_sdlRenderer);
 
         SDL_FRect gameArea = {0, 0, (float)Common::SCREEN_WIDTH, (float)Common::SCREEN_HEIGHT};
-        SDL_SetRenderDrawColor(m_sdlRenderer, 30, 30, 30, 1);
+        SDL_SetRenderDrawColor(m_sdlRenderer, 30, 30, 30, 255);
         SDL_RenderFillRect(m_sdlRenderer, &gameArea);
     }
 
@@ -39,7 +39,10 @@ namespace Engine
             SDL_DestroyTexture(texture);
         }
         m_textureCache.clear();
-        SDL_DestroyRenderer(m_sdlRenderer);
+        if (m_sdlRenderer)
+        {
+            SDL_DestroyRenderer(m_sdlRenderer);
+        }
     }
 
     void Renderer::drawCommands(const std::vector<Common::RenderCommand> &commands)
