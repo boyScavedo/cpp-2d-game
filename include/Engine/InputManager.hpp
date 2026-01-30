@@ -44,7 +44,7 @@ namespace Engine
             m_state.jump = keys[SDL_SCANCODE_SPACE];
 
             SDL_MouseButtonFlags mouseButtons = SDL_GetMouseState(nullptr, nullptr);
-            m_state.attack = (mouseButtons && SDL_BUTTON_MASK(SDL_BUTTON_LEFT)) != 0;
+            m_state.attack = (mouseButtons & SDL_BUTTON_MASK(SDL_BUTTON_LEFT)) != 0;
 
             return m_state;
         }

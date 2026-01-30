@@ -50,8 +50,21 @@ namespace Engine
          */
         SDL_Window *getSDLWindow() const { return m_window.get(); }
 
+        /**
+         * @brief Toggles the window to be either fullscreen or windowed
+         *
+         * @param input The current input state of the player.
+         */
         void update(const Common::InputState &input);
-        void fpsCounter(Uint64 *currentTick, Uint64 *lastTime, Uint64 *fps);
+
+        /**
+         * @brief Updates FPS counter state.
+         *
+         * @param currentTick Current tick count, updated by this method.
+         * @param lastTime Last recorded time, updated by this method.
+         * @param fps Computed frames per second, updated by this method.
+         */
+        void fpsCounter(const Uint64 &currentTick, Uint64 &lastTime, Uint64 &fps);
 
     private:
         std::unique_ptr<SDL_Window, SDLDeleter> m_window;

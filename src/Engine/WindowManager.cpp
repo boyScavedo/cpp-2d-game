@@ -51,14 +51,13 @@ namespace Engine
         SDL_SetWindowAspectRatio(m_window.get(), aspect, aspect);
     }
 
-    /**
-     * @brief Toggles the window to be either fullscreen or windowed
-     *
-     * @param input The current input state of the player.
-     */
     void WindowManager::update(const Common::InputState &input)
     {
         SDL_Window *window = getSDLWindow();
+
+        if (!window)
+            return;
+
         if (input.toggleFullScreen)
         {
             Uint32 flags = SDL_GetWindowFlags(window);
@@ -73,17 +72,17 @@ namespace Engine
         }
     }
 
-    void WindowManager::fpsCounter(Uint64 *currentTime, Uint64 *lastFpsUpdate, Uint64 *fps)
+    void WindowManager::fpsCounter(const Uint64 &currentTime, Uint64 &lastFpsUpdate, Uint64 &fps)
     {
-        (*fps)++;
+        fps++;
 
-        if (*currentTime > *lastFpsUpdate + 1000)
+        if (currentTime > lastFpsUpdate + 1000)
         {
             SDL_Window *window = getSDLWindow();
-            *lastFpsUpdate = *currentTime;
-            std::string title = Common::WINDOW_TITLE + std::to_string(*fps);
+            lastFpsUpdate = currentTime;
+            std::string title = Common::WINDOW_TITLE_PREFIX + std::to_string(fps);
             SDL_SetWindowTitle(window, title.c_str());
-            *fps = 0;
+            fps = 0;
         }
     }
 
