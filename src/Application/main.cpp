@@ -23,23 +23,28 @@ int main(int argc, char *argv[])
     (void)argc;
     (void)argv;
 
-    Engine::WindowManager window("2D Game", Common::MINIMUM_SCREEN_WIDTH, Common::MINIMUM_SCREEN_HEIGHT);
+    Engine::WindowManager window(Common::WINDOW_TITLE_PREFIX, Common::MINIMUM_SCREEN_WIDTH, Common::MINIMUM_SCREEN_HEIGHT);
     Engine::InputManager inputSystem;
     Engine::Renderer renderer(window.getSDLWindow());
 
-    Gameplay::Player player(100.0f, 100.0f);
+    Gameplay::Player player;
 
+    // For updating the fps counter via fpsCounter()
+    Uint64 fps = 0;
+    Uint64 lastFpsTime = 0;
     Uint64 lastTime = SDL_GetTicks();
+
     bool running = true;
     while (running)
     {
-
         std::vector<Common::RenderCommand> frameCommands;
         frameCommands.reserve(16);
 
         Uint64 currentTime = SDL_GetTicks();
         float deltaTime = (currentTime - lastTime) / 1000.0f;
         lastTime = currentTime;
+
+        window.fpsCounter(currentTime, lastFpsTime, fps);
 
         if (deltaTime > 0.1f)
         {
@@ -52,6 +57,7 @@ int main(int argc, char *argv[])
         {
             running = false;
         }
+        window.update(currentInput);
 
         player.update(deltaTime, currentInput);
 
