@@ -8,6 +8,15 @@
 
 #include "Common/Constants.hpp"
 
+/**
+ * @brief Application entry point that initializes engine subsystems and runs the main game loop.
+ *
+ * Initializes the window, input manager, renderer, and player; then enters a loop that
+ * performs time-stepping, input polling (including quit handling), game update, and
+ * frame command collection/rendering until the application exits.
+ *
+ * @return int Exit code; `0` indicates successful termination.
+ */
 int main(int argc, char *argv[])
 {
     // Suppress unused parameter warnings
