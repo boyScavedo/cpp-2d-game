@@ -4,11 +4,11 @@
 
 namespace Engine
 {
-
     WindowManager::WindowManager(const std::string &title, int requestedWidth, int requestedHeight)
     {
         if (requestedWidth <= 0 || requestedHeight <= 0)
         {
+            SDL_LogError(0, "Invalid window dimensions: %d x %d", requestedWidth, requestedHeight);
             return;
         }
         if (!SDL_Init(SDL_INIT_VIDEO))
@@ -16,6 +16,8 @@ namespace Engine
             SDL_LogError(0, "SDL not initialized");
             return;
         }
+
+        m_sdlInitialized = true;
 
         int windowW = requestedWidth;
         int windowH = requestedHeight;
@@ -35,7 +37,9 @@ namespace Engine
 
     WindowManager::~WindowManager()
     {
-        SDL_Quit();
+        if (m_sdlInitialized)
+        {
+            SDL_Quit();
+        }
     }
-
 } // namespace Engine

@@ -13,6 +13,10 @@ namespace Engine
         Renderer(SDL_Window *window);
         ~Renderer();
 
+        Renderer(const Renderer &) = delete;
+        Renderer &operator=(const Renderer &) = delete;
+        Renderer(Renderer &&) = delete;
+        Renderer &operator=(Renderer &&) = delete;
         // TODO: add textures, bool loadTexture(int id, const std::string& path);
         void beginFrame();
         void drawCommands(const std::vector<Common::RenderCommand> &commands);

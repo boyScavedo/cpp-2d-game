@@ -27,6 +27,7 @@ namespace Engine
 
     private:
         std::unique_ptr<SDL_Window, SDLDeleter> m_window;
+        bool m_sdlInitialized = false;
     };
 
 } // namespace Engine

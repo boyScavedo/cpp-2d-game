@@ -22,8 +22,14 @@ namespace Engine
 
     void Renderer::beginFrame()
     {
+        if (!m_sdlRenderer)
+            return;
         SDL_SetRenderDrawColor(m_sdlRenderer, 0, 0, 0, 255);
         SDL_RenderClear(m_sdlRenderer);
+
+        SDL_FRect gameArea = {0, 0, (float)Common::SCREEN_WIDTH, (float)Common::SCREEN_HEIGHT};
+        SDL_SetRenderDrawColor(m_sdlRenderer, 30, 30, 30, 1);
+        SDL_RenderFillRect(m_sdlRenderer, &gameArea);
     }
 
     Renderer::~Renderer()
@@ -38,6 +44,8 @@ namespace Engine
 
     void Renderer::drawCommands(const std::vector<Common::RenderCommand> &commands)
     {
+        if (!m_sdlRenderer)
+            return;
         for (const auto &cmd : commands)
         {
             SDL_FRect dest = {cmd.x, cmd.y, cmd.width, cmd.height};
@@ -64,6 +72,8 @@ namespace Engine
 
     void Renderer::endFrame()
     {
+        if (!m_sdlRenderer)
+            return;
         SDL_RenderPresent(m_sdlRenderer);
     }
 }

@@ -20,6 +20,6 @@ namespace Common
     {
         float x = 0.0f, y = 0.0f;
         float width = 0.0f, height = 0.0f;
-        Common::TextureID textureID;
+        Common::TextureID textureID = Common::TextureID::TEXT_NONE;
     };
 }

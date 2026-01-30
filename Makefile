@@ -108,7 +108,11 @@ directories:
 copy_assets:
 	@echo "Copying assets"
 	@mkdir -p $(BUILD_DIR)/$(ASSETS_DIR)
-
+	@if  [ -d "$(ASSETS_DIR)" ] && [ "$$(ls -A $(ASSETS_DIR) 2>/dev/null)" ]; then \
+		cp -r $(ASSETS_DIR)/* $(BUILD_DIR)/$(ASSETS_DIR)/; \
+	else \
+		echo "Warning: assets folder missing"; \
+	fi
 
 	@if [ "$(UNAME_S)" = "Darwin" ]; then \
 		echo "macOS: no runtime SDL copy needed"; \
