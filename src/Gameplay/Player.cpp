@@ -3,7 +3,7 @@
 #include "Common/Types.hpp"
 #include "Common/Constants.hpp"
 
-/ **
+/**
  * @brief Update the player's movement state for the current frame.
  *
  * Apply per-frame updates to the player's movement component using the elapsed
