@@ -1,10 +1,19 @@
 #pragma once
 
+#include <utility>
+
 #include "Common/Types.hpp"
 #include "Common/Constants.hpp"
 
 namespace Gameplay
 {
+    /**
+     * @class PlayerMovement
+     * @brief Handles the physics and movement logic for the player character.
+     *
+     * Manages position, velocity, acceleration, friction, gravity, and jumping mechanics
+     * to simulate realistic 2D platformer movement.
+     */
     class PlayerMovement
     {
     private:
@@ -20,8 +29,23 @@ namespace Gameplay
         bool m_canJump = false;
 
     public:
+        /**
+         * @brief Updates the player's movement based on input and time elapsed.
+         * @param deltaTime Time elapsed since the last update, in seconds.
+         * @param input The current input state to influence movement.
+         */
         void update(float deltaTime, const Common::InputState &input);
 
+        /**
+         * @brief Builds a render command for the player using its current position, size, and player texture.
+         * @return Common::RenderCommand A command containing position (x, y), size (width, height), and the `Common::TextureID::TEX_PLAYER` texture identifier.
+         */
         Common::RenderCommand getRenderCommand() const;
+
+        /**
+         * @brief Gets the player's current position.
+         * @return std::pair<float, float> A pair containing the x and y coordinates of the player.
+         */
+        std::pair<float, float> getPosition() const;
     };
 };
