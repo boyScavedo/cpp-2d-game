@@ -89,8 +89,8 @@ int main(int argc, char *argv[])
         frameCommands.push_back(player.getRenderCommand());
 
         // Add camera position indicator (small bar at bottom showing scroll progress)
-        float indicatorWidth = (camera.getCameraOffsetX() / Common::MAXIMUM_CAMERA_OFFSET_X) * 200.0f;                        // 200px max width
-        frameCommands.push_back({10.0f, Common::SCREEN_HEIGHT - 20.0f, indicatorWidth, 10.0f, Common::TextureID::TEXT_NONE}); // Cyan rectangle
+        float indicatorWidth = (camera.getCameraOffsetX() / Common::MAXIMUM_CAMERA_OFFSET_X) * 200.0f;                       // 200px max width
+        frameCommands.push_back({10.0f, Common::SCREEN_HEIGHT - 20.0f, indicatorWidth, 10.0f, Common::TextureID::TEX_NONE}); // Cyan rectangle
 
         renderer.drawCommands(frameCommands, camera.getCameraOffsetX());
 

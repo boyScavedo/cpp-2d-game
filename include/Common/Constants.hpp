@@ -67,7 +67,7 @@ namespace Common
         TEX_BACKGROUND_MID = 5,  /**< Texture for the mid background layer. */
         TEX_BACKGROUND_NEAR = 6, /**< Texture for the near background layer. */
         TEX_COUNT,               /**< Total number of textures; used for array sizing. */
-        TEXT_NONE = -1           /**< Special value indicating no texture. */
+        TEX_NONE = -1            /**< Special value indicating no texture. */
     };
 
     // --- Tile/Grid Settings ---

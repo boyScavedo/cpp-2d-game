@@ -26,9 +26,9 @@ namespace Common
      */
     struct RenderCommand
     {
-        float x = 0.0f, y = 0.0f;                                   /**< The x and y coordinates of the render position. */
-        float width = 0.0f, height = 0.0f;                          /**< The width and height of the rendered element. */
-        Common::TextureID textureID = Common::TextureID::TEXT_NONE; /**< The ID of the texture to render. */
-        float scrollFactor = 1.0f;                                  /**< The scroll factor for parallax effects (0.0 = fixed, 1.0 = full camera scroll). */
+        float x = 0.0f, y = 0.0f;                                  /**< The x and y coordinates of the render position. */
+        float width = 0.0f, height = 0.0f;                         /**< The width and height of the rendered element. */
+        Common::TextureID textureID = Common::TextureID::TEX_NONE; /**< The ID of the texture to render. */
+        float scrollFactor = 1.0f;                                 /**< The scroll factor for parallax effects (0.0 = fixed, 1.0 = full camera scroll). */
     };
 }
