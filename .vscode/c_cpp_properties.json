@@ -1,0 +1,23 @@
+{
+  "configurations": [
+    {
+      "name": "Win32",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "${workspaceFolder}/include",
+        "${workspaceFolder}/include/Engine",
+        "${workspaceFolder}/include/Gameplay",
+        "${workspaceFolder}/include/Core",
+        "${workspaceFolder}/include/Utils",
+        "lib\\SDL3\\x86_64-w64-mingw32\\include",
+        "lib\\googletest\\include"
+      ],
+      "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
+      "compilerPath": "C:\\w64devkit\\bin/g++.exe",
+      "cStandard": "c11",
+      "cppStandard": "c++23",
+      "intelliSenseMode": "windows-gcc-x64"
+    }
+  ],
+  "version": 4
+}

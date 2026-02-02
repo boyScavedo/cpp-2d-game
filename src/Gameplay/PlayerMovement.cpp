@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "Gameplay/PlayerMovement.hpp"
 
 /**
@@ -66,9 +68,9 @@ void Gameplay::PlayerMovement::update(float deltaTime, const Common::InputState 
         m_x = 0;
         m_velocityX = 0;
     }
-    if (m_x > Common::SCREEN_WIDTH - Common::PLAYER_WIDTH)
+    if (m_x > Common::WORLD_WIDTH - Common::PLAYER_WIDTH)
     {
-        m_x = Common::SCREEN_WIDTH - Common::PLAYER_WIDTH;
+        m_x = Common::WORLD_WIDTH - Common::PLAYER_WIDTH;
         m_velocityX = 0;
     }
     if (m_y < 0)
@@ -93,4 +95,14 @@ void Gameplay::PlayerMovement::update(float deltaTime, const Common::InputState 
 Common::RenderCommand Gameplay::PlayerMovement::getRenderCommand() const
 {
     return {m_x, m_y, Common::PLAYER_WIDTH, Common::PLAYER_HEIGHT, Common::TextureID::TEX_PLAYER}; // Texture Id at end
+}
+
+/**
+ * @brief Gets the player's current position.
+ *
+ * @return std::pair<float, float> A pair containing the x and y coordinates of the player.
+ */
+std::pair<float, float> Gameplay::PlayerMovement::getPosition() const
+{
+    return {m_x, m_y};
 }
