@@ -40,7 +40,7 @@ else
     # -------- Windows (MinGW SDL3) --------
     CXX := g++
 
-    SDL3_PATH ?= C:/SDL3/x86_64-w64-mingw32
+    SDL3_PATH ?= lib/SDL3/x86_64-w64-mingw32
     SDL3_INC  := $(SDL3_PATH)/include
     SDL3_LIBS := -L$(SDL3_PATH)/lib -lSDL3 -lSDL3_image
     SDL3_DLL  := $(SDL3_PATH)/bin/SDL3.dll
