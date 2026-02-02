@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Common/Constants.hpp"
-#include "Common/Types.hpp"
 
 namespace Engine
 {

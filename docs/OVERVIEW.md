@@ -14,6 +14,8 @@ The project structure includes organized namespaces (`Common`, `Engine`, `Gamepl
 
 ## Progress Toward MVP
 
+Last Updated: 2026-02-02
+
 The MVP is defined as achieving a functional level system, fluid movement system, and basic authentication for saving progress across multiple players with encrypted data.
 
 Based on the current codebase:

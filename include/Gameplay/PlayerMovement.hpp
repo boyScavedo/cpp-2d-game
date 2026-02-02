@@ -48,4 +48,4 @@ namespace Gameplay
          */
         std::pair<float, float> getPosition() const;
     };
-};
+}
