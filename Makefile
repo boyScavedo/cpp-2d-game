@@ -9,7 +9,7 @@ INC_DIR      := include
 BUILD_DIR    := build
 ASSETS_DIR   := assets
 
-CXX_STANDARD := -std=c++20
+CXX_STANDARD := -std=c++23
 WARNINGS     := -Wall -Wextra -Wpedantic
 DEBUG_FLAGS  := -g -O0
 RELEASE_FLAGS:= -O2 -DNDEBUG
