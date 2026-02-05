@@ -63,6 +63,7 @@ Constants are defined as `inline constexpr` for compile-time evaluation and are 
 
 - `PLAYER_WIDTH`: The width of the player sprite (50.0f). Used for collision and rendering.
 - `PLAYER_HEIGHT`: The height of the player sprite (50.0f). Used for collision and rendering.
+- `WORLD_START`: The starting boundary of the world (inline constexpr float). Typically used for room transitions.
 
 #### Physics & Gameplay Logic
 
@@ -86,7 +87,7 @@ Constants are defined as `inline constexpr` for compile-time evaluation and are 
   - `TEX_BACKGROUND_MID`: ID for mid background (5).
   - `TEX_BACKGROUND_NEAR`: ID for near background (6).
   - `TEX_COUNT`: Total texture count.
-  - `TEXT_NONE`: No texture (-1), for solid colors.
+  - `TEX_NONE`: No texture (-1), for solid colors.
 
 #### Tile/Grid Settings
 
@@ -236,44 +237,26 @@ Note: All other level data (Player, Backgrounds, Exits) is represented by ECS co
 
 The `Registry` class in `Gameplay::ECS` is the heart of the game state. It stores all entities and their components.
 
-### Player Class
+Usage: The `Registry` is updated by various `Systems` (Physics, Input, Collision) in the main game loop. Entity properties are modified by changing their associated components in the maps.
 
-Located in `include/Gameplay/Player.hpp` and `src/Gameplay/Player.cpp`.
+### ECS Components
+Located in `include/Gameplay/ECS/Components.hpp`. These POD structs define entity data.
+- **Transform**: Stores `x`, `y` position, `width`, `height`, and `zIndex`.
+- **Physics**: Handles `velocityX`, `velocityY`, `gravity`, `friction`, and `isGrounded` state.
+- **Sprite**: Stores `textureID` and a `zIndex` for layering.
+- **PlayerControl**: A tag component (with speed/jump modifiers) that identifies the player entity.
+- **Parallax**: Contains the `scrollFactor` for background layers.
+- **Collider**: Defines AABB dimensions for collision detection and `isTrigger` flag.
+- **LevelExit**: Stores transition destination (`nextLevelPath`) and direction.
 
-#### Members
+### ECS Systems
+Located in `include/Gameplay/ECS/`. These classes process logic by iterating over entity components.
+- **InputSystem**: Maps SDL input to the `Physics` component of entities with `PlayerControl`.
+- **PhysicsSystem**: Applies gravity, friction, and velocity to `Transform`. Handles world boundary clamping.
+- **CollisionSystem**: Checks for AABB intersections between `Collider` components. Triggers level transitions.
+- **RenderSystem**: Collects and sorts `RenderCommand`s by `zIndex` for the `Renderer`.
 
-- Private:
-  - `movement`: PlayerMovement instance.
-
-#### Methods
-
-- `void update(float deltaTime, const Common::InputState &input)`: Updates position via movement.
-- `Common::RenderCommand getRenderCommand() const`: Returns render command for player.
-- `std::pair<float, float> getPosition() const`: Returns current position.
-
-Usage: Create at startup, call `update` each frame, use `getPosition` for camera, `getRenderCommand` for rendering.
-
-### PlayerMovement Class
-
-Located in `include/Gameplay/PlayerMovement.hpp` and `src/Gameplay/PlayerMovement.cpp`.
-
-#### Members
-
-- Private:
-  - Constants: acceleration, friction, gravity, etc. (from Common).
-  - `m_x`, `m_y`: Position.
-  - `m_velocityX`, `m_velocityY`: Velocity.
-  - `m_canJump`: Jump availability.
-
-#### Methods
-
-- `void update(float deltaTime, const Common::InputState &input)`: Applies physics, input.
-- `Common::RenderCommand getRenderCommand() const`: Returns render command (delegates to Player).
-- `std::pair<float, float> getPosition() const`: Returns position.
-
-Usage: Managed by Player, handles movement logic.
-
-## Chapter 4: Utils Namespace
+## Chapter 5: Utils Namespace
 
 The `Utils` namespace contains utility classes.
 
@@ -302,8 +285,14 @@ The main application is in `src/Application/main.cpp`.
 
 ### Overview
 
-- Initializes window, input, renderer, camera, player.
-- Runs a loop: calculates deltaTime, updates FPS, polls input, updates window/player/camera, renders frame.
+- Initializes window, input, renderer, camera, and the ECS `Registry`.
+- Pre-loads initial level and textures.
+- Main Game Loop:
+    - Calculates deltaTime and updates FPS.
+    - Polls user input.
+    - Updates ECS Systems (`InputSystem`, `PhysicsSystem`, `CollisionSystem`).
+    - Updates Camera position.
+    - Renders scene via `RenderSystem` and `Renderer`.
 - Handles quit and fullscreen toggle.
 
 ### Key Variables
@@ -317,8 +306,8 @@ Usage: Compile and run the executable; the game loop runs until quit.
 ## How to Use the Project
 
 1. **Setup**: Ensure SDL3 is installed. Use the Makefile to build.
-2. **Initialization**: Create instances of WindowManager, InputManager, Renderer, Camera, Player.
-3. **Loop**: Each frame, update input, window, player, camera; collect render commands; draw.
+2. **Initialization**: Create instances of WindowManager, InputManager, Renderer, Camera, and the ECS `Registry`.
+3. **Loop**: Each frame, update input, window, and camera; run the ECS Systems (`ecsInput`, `ecsPhysics`, `ecsCollision`); collect render commands via `ecsRender`; draw.
 4. **Customization**: Modify constants for tuning, add new textures/enemies by extending enums and classes.
 
 ## Conclusion

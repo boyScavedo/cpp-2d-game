@@ -14,6 +14,7 @@ namespace Gameplay
             float y = 0.0f;
             float width = 32.0f;
             float height = 32.0f;
+            int zIndex = 0;
         };
 
         // 2. Visuals
