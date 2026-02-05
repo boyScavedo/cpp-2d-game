@@ -1,7 +1,7 @@
 # AI Instruction Guide
 
 ## Codebase Overview
-This is a C++ 2D Game Engine using SDL3. It currently follows a classic Object-Oriented Object pattern but is transitioning to a Data-Driven Entity Component System (ECS).
+This is a C++ 2D Game Engine using SDL3. It currently follows a classic Object-Oriented design pattern but is transitioning to a Data-Driven Entity Component System (ECS).
 
 ### Current Architecture (Legacy to be Refactored)
 - **Engine**:

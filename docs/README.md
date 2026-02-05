@@ -11,7 +11,7 @@ A bespoke 2D Game Engine built from scratch using C++20 and SDL3. This project d
 
 ## Roadmap (Academic MVP)
 - [ ] **ECS Refactor**: Migrating hardcoded objects to a concise Entity-Component-System.
-- [ ] **Level Loading**: Implmenting `nlohmann/json` for level definitions.
+- [ ] **Level Loading**: Implementing `nlohmann/json` for level definitions.
 - [ ] **Tools Integration**: Support for external level editors.
 
 ## Prerequisites

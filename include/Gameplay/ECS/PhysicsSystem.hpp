@@ -33,7 +33,7 @@ namespace Gameplay
                     }
 
                     // Terminal Velocity
-                    if (physics.velocityY > 2000.0f) physics.velocityY = 2000.0f; // Clamp fall speed
+                    if (physics.velocityY > Common::TERMINAL_VELOCITY) physics.velocityY = Common::TERMINAL_VELOCITY; // Clamp fall speed
 
                     // Apply Velocity to Position
                     transform.x += physics.velocityX * deltaTime;

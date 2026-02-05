@@ -48,6 +48,7 @@
      if (!Engine::LevelLoader::loadLevel(registry, "assets/levels/level1.json"))
      {
          std::cerr << "Failed to load initial level!" << std::endl;
+         return 1;
      }
 
      // Load Texture Resources

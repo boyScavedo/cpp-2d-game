@@ -35,7 +35,7 @@ namespace Common
     inline constexpr float PLAYER_HEIGHT = 50.0f;
 
     /** @brief The starting position of the game world for sidescrolling. */
-    inline constexpr int WORLD_START = -PLAYER_WIDTH;
+    inline constexpr float WORLD_START = -PLAYER_WIDTH;
 
     // --- Physics & Gameplay Logic ---
     /** @brief The target frames per second for the game loop. */

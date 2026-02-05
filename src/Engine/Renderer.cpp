@@ -196,6 +196,10 @@ namespace Engine
         if (alpha < 0.0f) alpha = 0.0f;
         if (alpha > 255.0f) alpha = 255.0f;
 
+        // Save original blend mode
+        SDL_BlendMode prevMode;
+        SDL_GetRenderDrawBlendMode(m_sdlRenderer, &prevMode);
+
         // Enable Blending
         SDL_SetRenderDrawBlendMode(m_sdlRenderer, SDL_BLENDMODE_BLEND);
         
@@ -205,8 +209,8 @@ namespace Engine
         SDL_FRect fullscreen = {0.0f, 0.0f, static_cast<float>(Common::SCREEN_WIDTH), static_cast<float>(Common::SCREEN_HEIGHT)};
         SDL_RenderFillRect(m_sdlRenderer, &fullscreen);
 
-        // Reset Blend Mode
-        SDL_SetRenderDrawBlendMode(m_sdlRenderer, SDL_BLENDMODE_NONE);
+        // Restore original blend mode
+        SDL_SetRenderDrawBlendMode(m_sdlRenderer, prevMode);
     }
 
     /**

@@ -134,11 +134,11 @@ Located in `include/Engine/LevelLoader.hpp` and `src/Engine/LevelLoader.cpp`.
 
 #### Methods
 
-- `static Gameplay::Level loadLevel(const std::string& path)`: 
+- `static bool loadLevel(Gameplay::ECS::Registry &registry, const std::string &path)`: 
   - Reads a JSON file from disk.
-  - Parses background layers, player start position, and enemies.
-  - Returns a constructed `Level` struct (defined in Gameplay).
-  - ERROR HANDLING: Returns a default/empty level if parsing fails, logging an error.
+  - Mutates the provided `Gameplay::ECS::Registry` in-place by creating entities and components.
+  - Returns a `bool` success flag (true on success, false on failure).
+  - ERROR HANDLING: Logs errors to SDL_Log if parsing fails or file cannot be opened.
 
 Usage: Called by `main.cpp` (or `Game` class) at startup to initialize the world.
 
@@ -220,18 +220,21 @@ Usage: Create at startup, call `update` each frame, pass result to window and pl
 
 The `Gameplay` namespace contains game-specific logic for the player and implementation of game rules.
 
-### Level Structure
+### Level Configuration
 
-Located in `include/Gameplay/Level.hpp`.
+Level configuration is managed via the `Registry::LevelConfig` struct and the provided components.
 
-A Plain Old Data (POD) struct that holds the loaded level data.
+#### Registry::LevelConfig Struct
+- `bool isLeftWallClamped`: If true, the world's left border is a solid wall.
+- `bool isRightWallClamped`: If true, the world's right border is a solid wall.
 
-#### Members
-- `std::string name`: Level name.
-- `float width`: World width.
-- `float height`: World height.
-- `std::pair<float, float> playerStart`: Spawn coordinates.
-- `std::vector<BackgroundLayer> backgrounds`: Parallax layers config.
+These properties allow for dynamic control over-room exits and world boundaries.
+
+Note: All other level data (Player, Backgrounds, Exits) is represented by ECS components managed by the `Registry`.
+
+### Registry Class
+
+The `Registry` class in `Gameplay::ECS` is the heart of the game state. It stores all entities and their components.
 
 ### Player Class
 

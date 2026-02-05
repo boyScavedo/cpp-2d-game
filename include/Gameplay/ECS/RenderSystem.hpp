@@ -20,6 +20,13 @@ namespace Gameplay
              */
             void render(const ECS::Registry& registry, std::vector<Common::RenderCommand>& outCommands)
             {
+                // We collect all commands first to sort them by zIndex for deterministic layering
+                struct SortableCommand {
+                    int zIndex;
+                    Common::RenderCommand command;
+                };
+                std::vector<SortableCommand> sortableCommands;
+
                 // 1. Render Backgrounds (Parallax)
                 for (const auto& [entity, parallax] : registry.backgrounds)
                 {
@@ -36,12 +43,11 @@ namespace Gameplay
                          cmd.textureID = sprite.textureID;
                          cmd.scrollFactor = parallax.factor;
                          
-                         outCommands.push_back(cmd);
+                         sortableCommands.push_back({ sprite.zIndex, cmd });
                     }
                 }
                 
                 // 2. Render Sprites (Entities like Player)
-                // Note: ideally we sort by zIndex. For MVP we just iterate.
                 for (const auto& [entity, sprite] : registry.sprites)
                 {
                     // Skip backgrounds (already rendered)
@@ -59,8 +65,19 @@ namespace Gameplay
                         cmd.textureID = sprite.textureID;
                         cmd.scrollFactor = 1.0f; // Default scroll factor for normal entities
                         
-                        outCommands.push_back(cmd);
+                        sortableCommands.push_back({ sprite.zIndex, cmd });
                     }
+                }
+
+                // 3. Sort by zIndex (Ascending)
+                std::sort(sortableCommands.begin(), sortableCommands.end(), [](const SortableCommand& a, const SortableCommand& b) {
+                    return a.zIndex < b.zIndex;
+                });
+
+                // 4. Final collection
+                for (auto& sc : sortableCommands)
+                {
+                    outCommands.push_back(sc.command);
                 }
             }
         };
