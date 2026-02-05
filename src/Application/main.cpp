@@ -218,9 +218,16 @@
          frameCommands.clear();
          ecsRender.render(registry, frameCommands);
  
-         // Camera Indicator
-         float indicatorWidth = (camera.getCameraOffsetX() / Common::MAXIMUM_CAMERA_OFFSET_X) * 200.0f;                       
-         frameCommands.push_back({10.0f, Common::SCREEN_HEIGHT - 20.0f, indicatorWidth, 10.0f, Common::TextureID::TEX_NONE});
+          // Camera Indicator
+          float indicatorWidth = 0.0f;
+          if (Common::MAXIMUM_CAMERA_OFFSET_X > 0.0f)
+          {
+              float ratio = camera.getCameraOffsetX() / Common::MAXIMUM_CAMERA_OFFSET_X;
+              if (ratio < 0.0f) ratio = 0.0f;
+              if (ratio > 1.0f) ratio = 1.0f;
+              indicatorWidth = ratio * 200.0f;
+          }
+          frameCommands.push_back({10.0f, Common::SCREEN_HEIGHT - 20.0f, indicatorWidth, 10.0f, Common::TextureID::TEX_NONE});
  
          // Draw Scene
          renderer.drawCommands(frameCommands, camera.getCameraOffsetX());
