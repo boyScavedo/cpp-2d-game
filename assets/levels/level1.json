@@ -1,0 +1,95 @@
+{
+    "name": "Level 1",
+    "isLeftWallClamped": true,
+    "isRightWallClamped": false,
+    "entities": [
+        {
+            "name": "Player",
+            "transform": {
+                "x": 100.0,
+                "y": "FLOOR",
+                "width": 50.0,
+                "height": 50.0
+            },
+            "sprite": {
+                "textureID": 0,
+                "zIndex": 10
+            },
+            "physics": {},
+            "playerControl": {
+                "speed": 1000.0
+            },
+            "collider": {
+                "width": 50,
+                "height": 50
+            }
+        },
+        {
+            "name": "Background_Far",
+            "transform": {
+                "x": 0.0,
+                "y": 0.0,
+                "width": 1280.0,
+                "height": 720.0
+            },
+            "sprite": {
+                "textureID": 4,
+                "zIndex": 0
+            },
+            "parallax": {
+                "factor": 0.2
+            }
+        },
+        {
+            "name": "Background_Mid",
+            "transform": {
+                "x": 0.0,
+                "y": 0.0,
+                "width": 1280.0,
+                "height": 720.0
+            },
+            "sprite": {
+                "textureID": 5,
+                "zIndex": 1
+            },
+            "parallax": {
+                "factor": 0.5
+            }
+        },
+        {
+            "name": "Background_Near",
+            "transform": {
+                "x": 0.0,
+                "y": 0.0,
+                "width": 1280.0,
+                "height": 720.0
+            },
+            "sprite": {
+                "textureID": 6,
+                "zIndex": 2
+            },
+            "parallax": {
+                "factor": 0.8
+            }
+        },
+        {
+            "name": "LevelExit_East",
+            "transform": {
+                "x": "WORLD_END",
+                "y": 0.0,
+                "width": 80.0,
+                "height": 720.0
+            },
+            "collider": {
+                "width": 80.0,
+                "height": 720.0,
+                "isTrigger": true
+            },
+            "exit": {
+                "direction": "East",
+                "nextLevel": "assets/levels/level2.json",
+                "transitionDuration": 1.0
+            }
+        }
+    ]
+}

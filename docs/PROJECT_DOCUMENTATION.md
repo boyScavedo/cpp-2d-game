@@ -12,8 +12,31 @@ The game features a player character that can move, jump, and interact in a 2D w
 - `src/`: Source files implementing the classes.
 - `docs/`: Documentation files, including this one and UML diagrams.
 - `build/`: Build artifacts (not documented here).
+- `assets/`: Game assets including textures and level data (JSON).
 
-## Chapter 1: Common Namespace
+## Chapter 1: Design Philosophy & Best Practices
+
+This project adheres to modern C++ game development standards, specifically focusing on **Data-Driven Design** and **Separation of Concerns**.
+
+### Data-Driven Design
+A core architectural decision was to decouple **content** from **code**. Instead of hardcoding level layouts and entity positions in C++, we use external data files (JSON).
+
+**Rationale**:
+- **Iteration Speed**: Game Designers can tweak levels in a text editor without triggering a C++ recompile.
+- **Scalability**: Adding new levels requires zero code changes.
+- **Modding Support**: Players can create custom levels by sharing `.json` files.
+- **Tooling**: External tools (like Tiled or LDtk) can export to JSON, streamlining the workflow.
+
+**Implementation**:
+We use the industry-standard `nlohmann/json` library for robust parsing. This avoids "reinventing the wheel" for text parsing and ensures high reliability.
+
+### Separation of Concerns
+Each module has a strict responsibility:
+- `Engine`: Handles "How things run" (Rendering, Input). It knows nothing about game rules.
+- `Gameplay`: Handles "What happens" (Player logic, Level loading).
+- `Data`: Handles "Where things are" (JSON files).
+
+## Chapter 2: Common Namespace
 
 The `Common` namespace contains shared constants and types used across the entire project. These are defined in `include/Common/Constants.hpp` and `include/Common/Types.hpp`.
 
@@ -40,6 +63,7 @@ Constants are defined as `inline constexpr` for compile-time evaluation and are 
 
 - `PLAYER_WIDTH`: The width of the player sprite (50.0f). Used for collision and rendering.
 - `PLAYER_HEIGHT`: The height of the player sprite (50.0f). Used for collision and rendering.
+- `WORLD_START`: The starting boundary of the world (inline constexpr float). Typically used for room transitions.
 
 #### Physics & Gameplay Logic
 
@@ -63,7 +87,7 @@ Constants are defined as `inline constexpr` for compile-time evaluation and are 
   - `TEX_BACKGROUND_MID`: ID for mid background (5).
   - `TEX_BACKGROUND_NEAR`: ID for near background (6).
   - `TEX_COUNT`: Total texture count.
-  - `TEXT_NONE`: No texture (-1), for solid colors.
+  - `TEX_NONE`: No texture (-1), for solid colors.
 
 #### Tile/Grid Settings
 
@@ -96,9 +120,28 @@ A struct representing a rendering instruction from gameplay to engine.
 
 Usage: Collected in a vector and passed to `Renderer` for drawing.
 
-## Chapter 2: Engine Namespace
+## Chapter 3: Engine Namespace
 
 The `Engine` namespace contains core engine components for window management, rendering, input, and camera control. Classes are defined in `include/Engine/`.
+
+### LevelLoader Class
+
+Located in `include/Engine/LevelLoader.hpp` and `src/Engine/LevelLoader.cpp`.
+
+#### Members
+
+- Private:
+  - None (Stateless utility or singleton depending on implementation).
+
+#### Methods
+
+- `static bool loadLevel(Gameplay::ECS::Registry &registry, const std::string &path)`: 
+  - Reads a JSON file from disk.
+  - Mutates the provided `Gameplay::ECS::Registry` in-place by creating entities and components.
+  - Returns a `bool` success flag (true on success, false on failure).
+  - ERROR HANDLING: Logs errors to SDL_Log if parsing fails or file cannot be opened.
+
+Usage: Called by `main.cpp` (or `Game` class) at startup to initialize the world.
 
 ### Camera Class
 
@@ -174,48 +217,46 @@ Located in `include/Engine/InputManager.hpp` and `src/Engine/InputManagement.cpp
 
 Usage: Create at startup, call `update` each frame, pass result to window and player.
 
-## Chapter 3: Gameplay Namespace
+## Chapter 4: Gameplay Namespace
 
-The `Gameplay` namespace contains game-specific logic for the player.
+The `Gameplay` namespace contains game-specific logic for the player and implementation of game rules.
 
-### Player Class
+### Level Configuration
 
-Located in `include/Gameplay/Player.hpp` and `src/Gameplay/Player.cpp`.
+Level configuration is managed via the `Registry::LevelConfig` struct and the provided components.
 
-#### Members
+#### Registry::LevelConfig Struct
+- `bool isLeftWallClamped`: If true, the world's left border is a solid wall.
+- `bool isRightWallClamped`: If true, the world's right border is a solid wall.
 
-- Private:
-  - `movement`: PlayerMovement instance.
+These properties allow for dynamic control over-room exits and world boundaries.
 
-#### Methods
+Note: All other level data (Player, Backgrounds, Exits) is represented by ECS components managed by the `Registry`.
 
-- `void update(float deltaTime, const Common::InputState &input)`: Updates position via movement.
-- `Common::RenderCommand getRenderCommand() const`: Returns render command for player.
-- `std::pair<float, float> getPosition() const`: Returns current position.
+### Registry Class
 
-Usage: Create at startup, call `update` each frame, use `getPosition` for camera, `getRenderCommand` for rendering.
+The `Registry` class in `Gameplay::ECS` is the heart of the game state. It stores all entities and their components.
 
-### PlayerMovement Class
+Usage: The `Registry` is updated by various `Systems` (Physics, Input, Collision) in the main game loop. Entity properties are modified by changing their associated components in the maps.
 
-Located in `include/Gameplay/PlayerMovement.hpp` and `src/Gameplay/PlayerMovement.cpp`.
+### ECS Components
+Located in `include/Gameplay/ECS/Components.hpp`. These POD structs define entity data.
+- **Transform**: Stores `x`, `y` position, `width`, `height`, and `zIndex`.
+- **Physics**: Handles `velocityX`, `velocityY`, `gravity`, `friction`, and `isGrounded` state.
+- **Sprite**: Stores `textureID` and a `zIndex` for layering.
+- **PlayerControl**: A tag component (with speed/jump modifiers) that identifies the player entity.
+- **Parallax**: Contains the `scrollFactor` for background layers.
+- **Collider**: Defines AABB dimensions for collision detection and `isTrigger` flag.
+- **LevelExit**: Stores transition destination (`nextLevelPath`) and direction.
 
-#### Members
+### ECS Systems
+Located in `include/Gameplay/ECS/`. These classes process logic by iterating over entity components.
+- **InputSystem**: Maps SDL input to the `Physics` component of entities with `PlayerControl`.
+- **PhysicsSystem**: Applies gravity, friction, and velocity to `Transform`. Handles world boundary clamping.
+- **CollisionSystem**: Checks for AABB intersections between `Collider` components. Triggers level transitions.
+- **RenderSystem**: Collects and sorts `RenderCommand`s by `zIndex` for the `Renderer`.
 
-- Private:
-  - Constants: acceleration, friction, gravity, etc. (from Common).
-  - `m_x`, `m_y`: Position.
-  - `m_velocityX`, `m_velocityY`: Velocity.
-  - `m_canJump`: Jump availability.
-
-#### Methods
-
-- `void update(float deltaTime, const Common::InputState &input)`: Applies physics, input.
-- `Common::RenderCommand getRenderCommand() const`: Returns render command (delegates to Player).
-- `std::pair<float, float> getPosition() const`: Returns position.
-
-Usage: Managed by Player, handles movement logic.
-
-## Chapter 4: Utils Namespace
+## Chapter 5: Utils Namespace
 
 The `Utils` namespace contains utility classes.
 
@@ -238,14 +279,20 @@ Usage: Call each frame to get current FPS.
 
 `include/Utils/Math.hpp` appears empty or minimal; no significant content documented.
 
-## Chapter 5: Application Entry Point
+## Chapter 6: Application Entry Point
 
 The main application is in `src/Application/main.cpp`.
 
 ### Overview
 
-- Initializes window, input, renderer, camera, player.
-- Runs a loop: calculates deltaTime, updates FPS, polls input, updates window/player/camera, renders frame.
+- Initializes window, input, renderer, camera, and the ECS `Registry`.
+- Pre-loads initial level and textures.
+- Main Game Loop:
+    - Calculates deltaTime and updates FPS.
+    - Polls user input.
+    - Updates ECS Systems (`InputSystem`, `PhysicsSystem`, `CollisionSystem`).
+    - Updates Camera position.
+    - Renders scene via `RenderSystem` and `Renderer`.
 - Handles quit and fullscreen toggle.
 
 ### Key Variables
@@ -259,8 +306,8 @@ Usage: Compile and run the executable; the game loop runs until quit.
 ## How to Use the Project
 
 1. **Setup**: Ensure SDL3 is installed. Use the Makefile to build.
-2. **Initialization**: Create instances of WindowManager, InputManager, Renderer, Camera, Player.
-3. **Loop**: Each frame, update input, window, player, camera; collect render commands; draw.
+2. **Initialization**: Create instances of WindowManager, InputManager, Renderer, Camera, and the ECS `Registry`.
+3. **Loop**: Each frame, update input, window, and camera; run the ECS Systems (`ecsInput`, `ecsPhysics`, `ecsCollision`); collect render commands via `ecsRender`; draw.
 4. **Customization**: Modify constants for tuning, add new textures/enemies by extending enums and classes.
 
 ## Conclusion

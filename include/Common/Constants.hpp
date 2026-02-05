@@ -34,6 +34,9 @@ namespace Common
     /** @brief The height of the player character in pixels. */
     inline constexpr float PLAYER_HEIGHT = 50.0f;
 
+    /** @brief The starting position of the game world for sidescrolling. */
+    inline constexpr float WORLD_START = -PLAYER_WIDTH;
+
     // --- Physics & Gameplay Logic ---
     /** @brief The target frames per second for the game loop. */
     inline constexpr float TARGET_FPS = 60.0f;

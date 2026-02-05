@@ -1,0 +1,62 @@
+{
+    "isLeftWallClamped": false,
+    "isRightWallClamped": true,
+    "entities": [
+        {
+            "transform": {
+                "x": 0,
+                "y": 0,
+                "width": 800,
+                "height": 600
+            },
+            "sprite": {
+                "textureID": 1002,
+                "zIndex": 0
+            },
+            "parallax": {
+                "factor": 1.0
+            }
+        },
+        {
+            "transform": {
+                "x": 200,
+                "y": "FLOOR",
+                "width": 50,
+                "height": 50
+            },
+            "sprite": {
+                "textureID": 0,
+                "zIndex": 10
+            },
+            "physics": {
+                "velocityX": 0,
+                "velocityY": 0
+            },
+            "playerControl": {
+                "speed": 600.0
+            },
+            "collider": {
+                "width": 50,
+                "height": 50
+            }
+        },
+        {
+            "name": "LevelExit_West",
+            "transform": {
+                "x": "WORLD_START",
+                "y": 0,
+                "width": 50,
+                "height": 720
+            },
+            "collider": {
+                "width": 50,
+                "height": 720,
+                "isTrigger": true
+            },
+            "exit": {
+                "direction": "West",
+                "nextLevel": "assets/levels/level1.json"
+            }
+        }
+    ]
+}

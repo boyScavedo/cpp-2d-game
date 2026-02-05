@@ -66,7 +66,8 @@ namespace Engine
         SDL_Surface *surface = IMG_Load(path.c_str());
         if (!surface)
         {
-            SDL_LogError(1, "Failed to load texture from %s: %s", path.c_str(), SDL_GetError());
+            // WARN instead of Error, and return false so we know to use fallback
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Missing asset: %s. Using fallback shape.", path.c_str());
             return false;
         }
 
@@ -185,6 +186,31 @@ namespace Engine
                 SDL_RenderFillRect(m_sdlRenderer, &dest);
             }
         }
+    }
+
+    void Renderer::drawOverlay(float alpha)
+    {
+        if (!m_sdlRenderer) return;
+
+        // Clamp alpha
+        if (alpha < 0.0f) alpha = 0.0f;
+        if (alpha > 255.0f) alpha = 255.0f;
+
+        // Save original blend mode
+        SDL_BlendMode prevMode;
+        SDL_GetRenderDrawBlendMode(m_sdlRenderer, &prevMode);
+
+        // Enable Blending
+        SDL_SetRenderDrawBlendMode(m_sdlRenderer, SDL_BLENDMODE_BLEND);
+        
+        // Draw Full Screen Black Rect
+        SDL_SetRenderDrawColor(m_sdlRenderer, 0, 0, 0, static_cast<Uint8>(alpha));
+        // Use Common::SCREEN_WIDTH/HEIGHT
+        SDL_FRect fullscreen = {0.0f, 0.0f, static_cast<float>(Common::SCREEN_WIDTH), static_cast<float>(Common::SCREEN_HEIGHT)};
+        SDL_RenderFillRect(m_sdlRenderer, &fullscreen);
+
+        // Restore original blend mode
+        SDL_SetRenderDrawBlendMode(m_sdlRenderer, prevMode);
     }
 
     /**
