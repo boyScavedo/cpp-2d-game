@@ -12,8 +12,31 @@ The game features a player character that can move, jump, and interact in a 2D w
 - `src/`: Source files implementing the classes.
 - `docs/`: Documentation files, including this one and UML diagrams.
 - `build/`: Build artifacts (not documented here).
+- `assets/`: Game assets including textures and level data (JSON).
 
-## Chapter 1: Common Namespace
+## Chapter 1: Design Philosophy & Best Practices
+
+This project adheres to modern C++ game development standards, specifically focusing on **Data-Driven Design** and **Separation of Concerns**.
+
+### Data-Driven Design
+A core architectural decision was to decouple **content** from **code**. Instead of hardcoding level layouts and entity positions in C++, we use external data files (JSON).
+
+**Rationale**:
+- **Iteration Speed**: Game Designers can tweak levels in a text editor without triggering a C++ recompile.
+- **Scalability**: Adding new levels requires zero code changes.
+- **Modding Support**: Players can create custom levels by sharing `.json` files.
+- **Tooling**: External tools (like Tiled or LDtk) can export to JSON, streamlining the workflow.
+
+**Implementation**:
+We use the industry-standard `nlohmann/json` library for robust parsing. This avoids "reinventing the wheel" for text parsing and ensures high reliability.
+
+### Separation of Concerns
+Each module has a strict responsibility:
+- `Engine`: Handles "How things run" (Rendering, Input). It knows nothing about game rules.
+- `Gameplay`: Handles "What happens" (Player logic, Level loading).
+- `Data`: Handles "Where things are" (JSON files).
+
+## Chapter 2: Common Namespace
 
 The `Common` namespace contains shared constants and types used across the entire project. These are defined in `include/Common/Constants.hpp` and `include/Common/Types.hpp`.
 
@@ -96,9 +119,28 @@ A struct representing a rendering instruction from gameplay to engine.
 
 Usage: Collected in a vector and passed to `Renderer` for drawing.
 
-## Chapter 2: Engine Namespace
+## Chapter 3: Engine Namespace
 
 The `Engine` namespace contains core engine components for window management, rendering, input, and camera control. Classes are defined in `include/Engine/`.
+
+### LevelLoader Class
+
+Located in `include/Engine/LevelLoader.hpp` and `src/Engine/LevelLoader.cpp`.
+
+#### Members
+
+- Private:
+  - None (Stateless utility or singleton depending on implementation).
+
+#### Methods
+
+- `static Gameplay::Level loadLevel(const std::string& path)`: 
+  - Reads a JSON file from disk.
+  - Parses background layers, player start position, and enemies.
+  - Returns a constructed `Level` struct (defined in Gameplay).
+  - ERROR HANDLING: Returns a default/empty level if parsing fails, logging an error.
+
+Usage: Called by `main.cpp` (or `Game` class) at startup to initialize the world.
 
 ### Camera Class
 
@@ -174,9 +216,22 @@ Located in `include/Engine/InputManager.hpp` and `src/Engine/InputManagement.cpp
 
 Usage: Create at startup, call `update` each frame, pass result to window and player.
 
-## Chapter 3: Gameplay Namespace
+## Chapter 4: Gameplay Namespace
 
-The `Gameplay` namespace contains game-specific logic for the player.
+The `Gameplay` namespace contains game-specific logic for the player and implementation of game rules.
+
+### Level Structure
+
+Located in `include/Gameplay/Level.hpp`.
+
+A Plain Old Data (POD) struct that holds the loaded level data.
+
+#### Members
+- `std::string name`: Level name.
+- `float width`: World width.
+- `float height`: World height.
+- `std::pair<float, float> playerStart`: Spawn coordinates.
+- `std::vector<BackgroundLayer> backgrounds`: Parallax layers config.
 
 ### Player Class
 
@@ -238,7 +293,7 @@ Usage: Call each frame to get current FPS.
 
 `include/Utils/Math.hpp` appears empty or minimal; no significant content documented.
 
-## Chapter 5: Application Entry Point
+## Chapter 6: Application Entry Point
 
 The main application is in `src/Application/main.cpp`.
 
