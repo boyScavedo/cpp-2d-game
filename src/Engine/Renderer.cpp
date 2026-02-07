@@ -1,3 +1,8 @@
+/**
+ * @file Renderer.cpp
+ * @brief Implementation of the Renderer class for SDL-based drawing.
+ */
+
 #include <vector>
 #include <string>
 
@@ -165,6 +170,10 @@ namespace Engine
                 if (cmd.textureID == Common::TextureID::TEX_PLAYER)
                 {
                     SDL_SetRenderDrawColor(m_sdlRenderer, 255, 0, 0, 255);
+                }
+                else if (cmd.textureID == Common::TextureID::TEX_NONE)
+                {
+                    SDL_SetRenderDrawColor(m_sdlRenderer, cmd.colorR, cmd.colorG, cmd.colorB, cmd.colorA);
                 }
                 else if (cmd.textureID == Common::TextureID::TEX_BACKGROUND_FAR)
                 {

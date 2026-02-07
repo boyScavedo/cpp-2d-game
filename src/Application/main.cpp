@@ -1,6 +1,11 @@
+/**
+ * @file main.cpp
+ * @brief Application entry point and main game loop implementation.
+ */
 
 #include <vector>
 #include <iostream>
+#include <fstream>
 
 #include "Engine/InputManager.hpp"
 #include "Engine/WindowManager.hpp"
@@ -8,15 +13,13 @@
 #include "Engine/Camera.hpp"
 #include "Engine/LevelLoader.hpp"
 
-#include "Gameplay/ECS/Registry.hpp"
-#include "Gameplay/ECS/InputSystem.hpp"
-#include "Gameplay/ECS/PhysicsSystem.hpp"
-#include "Gameplay/ECS/RenderSystem.hpp"
-
-#include "Common/Constants.hpp"
-
-// Include CollisionSystem
-#include "Gameplay/ECS/CollisionSystem.hpp"
+#include "Engine/AuthService.hpp"
+#include "Admin/LevelEditor.hpp"
+#include "Gameplay/CLIHandler.hpp"
+#include "Gameplay/UI/ProgressIndicator.hpp"
+#include "Gameplay/EntityManager.hpp"
+#include "Gameplay/Entity.hpp"
+#include "Gameplay/Components.hpp"
 
  /**
   * @brief Application entry point that initializes engine subsystems and runs the main game loop.
@@ -32,214 +35,240 @@
      (void)argc;
      (void)argv;
  
-     Engine::WindowManager window(Common::WINDOW_TITLE_PREFIX, Common::MINIMUM_SCREEN_WIDTH, Common::MINIMUM_SCREEN_HEIGHT);
-     Engine::InputManager inputSystem;
-     Engine::Renderer renderer(window.getSDLWindow());
-     Engine::Camera camera;
+     // --- Authentication System ---
+     Engine::AuthService authService;
+     std::optional<Engine::User> currentUser = Gameplay::CLIHandler::runAuthFlow(authService);
  
-     // --- ECS Initialization ---
-     Gameplay::ECS::Registry registry;
-     Gameplay::Systems::InputSystem ecsInput;
-     Gameplay::Systems::PhysicsSystem ecsPhysics;
-     Gameplay::Systems::RenderSystem ecsRender;
-     Gameplay::Systems::CollisionSystem ecsCollision; // NEW
- 
-     // Load Level
-     if (!Engine::LevelLoader::loadLevel(registry, "assets/levels/level1.json"))
-     {
-         std::cerr << "Failed to load initial level!" << std::endl;
-         return 1;
-     }
+     if (!currentUser) return 1;
 
-     // Load Texture Resources
-     renderer.loadTexture(Common::TextureID::TEX_BACKGROUND_FAR, "assets/sprites/Background_Far.png");
-     renderer.loadTexture(Common::TextureID::TEX_BACKGROUND_MID, "assets/sprites/Background_Mid_Start.png");
-     renderer.loadTexture(Common::TextureID::TEX_BACKGROUND_NEAR, "assets/sprites/Background_Near_Start.png");
-     renderer.loadTexture(Common::TextureID::TEX_PLAYER, "assets/sprites/Player.png");
- 
-     // For updating the fps counter via fpsCounter()
-     Uint64 fps = 0;
-     Uint64 lastFpsTime = 0;
-     Uint64 lastTime = SDL_GetTicks();
- 
-     bool running = true;
-     
-     // --- Transition Logic ---
-     // --- Transition Logic ---
-     bool isTransitioning = false;
-     float transitionAlpha = 0.0f; // 0 = Transparent, 255 = Black
-     std::string pendingLevel = "";
-     Gameplay::ECS::CardinalDirection entryDirection = Gameplay::ECS::CardinalDirection::East; 
-     
-     // Persistent State Checkpoint
-     Gameplay::ECS::Physics savedPhysics;
-     float savedPosY = 0.0f;
-     bool hasSavedState = false;
-     float currentTransitionDuration = 0.5f;
-
-     while (running)
-     {
-         std::vector<Common::RenderCommand> frameCommands;
-         frameCommands.reserve(32); 
- 
-         Uint64 currentTime = SDL_GetTicks();
-         float deltaTime = (currentTime - lastTime) / 1000.0f;
-         lastTime = currentTime;
- 
-         window.fpsCounter(currentTime, lastFpsTime, fps);
- 
-         if (deltaTime > 0.1f) deltaTime = 0.1f;
- 
-         // --- Input System ---
-         Common::InputState currentInput = inputSystem.update();
-         if (currentInput.quit) running = false;
+     bool appRunning = true;
+     while (appRunning) {
+         Gameplay::CLIHandler::AdminDashboardResult adminResult = Gameplay::CLIHandler::runAdminDashboard(*currentUser);
          
-         window.update(currentInput);
- 
-         // --- Game Logic ---
-         if (!isTransitioning)
-         {
-             ecsInput.update(registry, currentInput, deltaTime);
-             ecsPhysics.update(registry, deltaTime);
-             
-             // Check Collisions & Transitions
-             auto exitData = ecsCollision.check(registry); 
-             if (exitData.has_value())
-             {
-                 std::cout << "Level Transition Triggered! Going to: " << exitData->nextLevelPath << std::endl;
-                 isTransitioning = true;
-                 pendingLevel = exitData->nextLevelPath;
-                 entryDirection = exitData->direction; 
-                 currentTransitionDuration = exitData->transitionDuration;
+         if (adminResult.shouldExitApp) {
+             appRunning = false;
+             break;
+         }
 
-                 // SAVE PLAYER STATE
-                 for (const auto& [entity, physics] : registry.physics)
-                 {
-                     if (registry.has<Gameplay::ECS::PlayerControl>(entity) && registry.has<Gameplay::ECS::Transform>(entity))
-                     {
-                         savedPhysics = physics;
-                         savedPosY = registry.get<Gameplay::ECS::Transform>(entity).y;
-                         hasSavedState = true;
+         // Scope-based Engine Initialization (Window destroyed when we return to dashboard)
+         {
+             Engine::WindowManager window(Common::WINDOW_TITLE_PREFIX, Common::MINIMUM_SCREEN_WIDTH, Common::MINIMUM_SCREEN_HEIGHT);
+             Engine::InputManager inputSystem;
+             Engine::Renderer renderer(window.getSDLWindow());
+             Engine::Camera camera;
+             Gameplay::UI::ProgressIndicator progressIndicator(Common::VIEWPORT_WIDTH - 200.0f - 20.0f, 20.0f, 200.0f, 10.0f);
+             Gameplay::EntityManager entityManager;
+             Admin::LevelEditor levelEditor(entityManager, camera);
+
+             if (adminResult.enterEditor) {
+                 levelEditor.setActive(true);
+             }
+
+             if (adminResult.createNewLevel) {
+                 std::cout << "Initializing fresh level (Width: " << adminResult.newLevelWidth << ")..." << std::endl;
+                 entityManager.levelConfig.isLeftWallClamped = true;
+                 entityManager.levelConfig.isRightWallClamped = true;
+                 entityManager.levelConfig.levelWidth = adminResult.newLevelWidth;
+                 // Note: No player is spawned in a fresh level for the editor
+             } else {
+                 std::string levelPath = adminResult.levelToLoad.empty() ? currentUser->currentLevel : adminResult.levelToLoad;
+                 if (!Engine::LevelLoader::loadLevel(entityManager, levelPath)) {
+                     std::cerr << "Failed to load level: " << levelPath << "!" << std::endl;
+                     if (!Engine::LevelLoader::loadLevel(entityManager, "build/assets/levels/level1.json")) {
+                         appRunning = false;
                          break;
                      }
                  }
              }
-         }
-         else
-         {
-             // FADE OUT LOGIC
-             // Calculate speed based on duration (255 / duration)
-             float fadeSpeed = (currentTransitionDuration > 0.0f) ? (255.0f / currentTransitionDuration) : 500.0f;
-             
-             transitionAlpha += fadeSpeed * deltaTime; 
-             
-             if (transitionAlpha >= 255.0f)
-             {
-                 transitionAlpha = 255.0f;
-                 
-                 // Perform Switch
-                 registry = Gameplay::ECS::Registry(); // Clear Registry
-                 if (!Engine::LevelLoader::loadLevel(registry, pendingLevel))
-                 {
-                     std::cerr << "Failed to load next level: " << pendingLevel << std::endl;
-                     running = false; 
-                 }
-                 else
-                 {
-                    // --- SPAWN & RESTORE LOGIC ---
-                    
-                    // 1. Calculate X Spawn
-                    float spawnX = 100.0f; 
-                    if (entryDirection == Gameplay::ECS::CardinalDirection::East)
-                    {
-                        spawnX = 100.0f; 
-                    }
-                    else if (entryDirection == Gameplay::ECS::CardinalDirection::West)
-                    {
-                        spawnX = Common::WORLD_WIDTH - 150.0f; 
-                    }
-                    
-                    for (const auto& [entity, control] : registry.players)
-                    {
-                        if (registry.has<Gameplay::ECS::Transform>(entity))
-                        {
-                            auto& transform = registry.get<Gameplay::ECS::Transform>(entity);
-                            
-                            // Apply X position
-                            transform.x = spawnX;
 
-                            // RESTORE STATE (Y-Pos + Physics)
-                            if (hasSavedState && registry.has<Gameplay::ECS::Physics>(entity))
-                            {
-                                // Restore Vertical Position (allowing seamless jump arcs)
-                                // Note: We might want to clamp this if levels have vastly different floor heights,
-                                // but for now, exact Y preservation is desired.
-                                transform.y = savedPosY; 
-                                
-                                // Restore Physics (Velocity, etc.)
-                                auto& newPhysics = registry.get<Gameplay::ECS::Physics>(entity);
-                                newPhysics = savedPhysics;
-                            }
-                            else
-                            {
-                                // Fallback if no state saved (first load?)
-                                transform.y = Common::SCREEN_HEIGHT - transform.height;
-                            }
-                            
-                            // Ensure camera snaps to player immediately
-                            camera.update(transform.x); 
-                            break; 
-                        }
-                    }
+             camera.setMaxCameraOffsetX(entityManager.levelConfig.levelWidth - Common::VIEWPORT_WIDTH);
+             camera.setMinCameraOffsetX(0.0f);
 
-                    // Reset Transition
-                    isTransitioning = false; 
-                    transitionAlpha = 0.0f; 
-                    hasSavedState = false; // Consume state
+             // Load Textures
+             renderer.loadTexture(Common::TextureID::TEX_BACKGROUND_FAR, "assets/sprites/Background_Far.png");
+             renderer.loadTexture(Common::TextureID::TEX_BACKGROUND_MID, "assets/sprites/Background_Mid_Start.png");
+             renderer.loadTexture(Common::TextureID::TEX_BACKGROUND_NEAR, "assets/sprites/Background_Near_Start.png");
+             renderer.loadTexture(Common::TextureID::TEX_PLAYER, "assets/sprites/Player.png");
+
+             // Initial player state for non-new levels
+             auto initialPlayer = entityManager.getPlayer();
+             if (initialPlayer && !adminResult.enterEditor) {
+                 if (currentUser->posX > 0.0f) {
+                     initialPlayer->transform.x = currentUser->posX;
+                     initialPlayer->transform.y = currentUser->posY;
                  }
+                 camera.update(initialPlayer->transform.x);
              }
-         }
- 
-         // --- Camera Update ---
-         float playerX = 0.0f;
-         for (const auto& [entity, control] : registry.players)
-         {
-              if (registry.has<Gameplay::ECS::Transform>(entity))
-              {
-                  playerX = registry.get<Gameplay::ECS::Transform>(entity).x;
-                  break; 
-              }
-         }
-         camera.update(playerX);
- 
-         // --- Render System ---
-         renderer.beginFrame();
-         
-         frameCommands.clear();
-         ecsRender.render(registry, frameCommands);
- 
-          // Camera Indicator
-          float indicatorWidth = 0.0f;
-          if (Common::MAXIMUM_CAMERA_OFFSET_X > 0.0f)
-          {
-              float ratio = camera.getCameraOffsetX() / Common::MAXIMUM_CAMERA_OFFSET_X;
-              if (ratio < 0.0f) ratio = 0.0f;
-              if (ratio > 1.0f) ratio = 1.0f;
-              indicatorWidth = ratio * 200.0f;
-          }
-          frameCommands.push_back({10.0f, Common::SCREEN_HEIGHT - 20.0f, indicatorWidth, 10.0f, Common::TextureID::TEX_NONE});
- 
-         // Draw Scene
-         renderer.drawCommands(frameCommands, camera.getCameraOffsetX());
 
-         // Draw Blackout Overlay
-         if (isTransitioning)
-         {
-             renderer.drawOverlay(transitionAlpha);
-         }
-         
-         renderer.endFrame();
+             Uint64 lastTime = SDL_GetTicks();
+             Uint64 lastFpsTime = 0, fps = 0;
+             bool running = true;
+             bool isTransitioning = false;
+             float transitionAlpha = 0.0f;
+             std::string pendingLevel = "";
+             Gameplay::CardinalDirection entryDirection = Gameplay::CardinalDirection::East;
+             float currentTransitionDuration = 0.5f;
+
+             while (running) {
+                 std::vector<Common::RenderCommand> frameCommands;
+                 Uint64 currentTime = SDL_GetTicks();
+                 float deltaTime = (currentTime - lastTime) / 1000.0f;
+                 lastTime = currentTime;
+                 if (deltaTime > 0.1f) deltaTime = 0.1f;
+
+                 window.fpsCounter(currentTime, lastFpsTime, fps);
+                 Common::InputState input = inputSystem.update();
+                 if (input.quit) {
+                     running = false;
+                     appRunning = false;
+                 }
+                 window.update(input);
+
+                 if (levelEditor.isActive()) {
+                     levelEditor.update(deltaTime, input);
+                 }
+
+                 if (!isTransitioning) {
+                     entityManager.update(deltaTime, input);
+                     auto player = entityManager.getPlayer();
+                     if (player) progressIndicator.update(player->transform.x, Common::WORLD_WIDTH);
+
+                     auto exitData = entityManager.checkCollisions();
+                     if (exitData.has_value()) {
+                         isTransitioning = true;
+                         pendingLevel = exitData->nextLevelPath;
+                         entryDirection = exitData->direction;
+                         currentTransitionDuration = exitData->transitionDuration;
+                     }
+                 } else {
+                     float fadeSpeed = (currentTransitionDuration > 0.0f) ? (255.0f / currentTransitionDuration) : 500.0f;
+                     transitionAlpha += fadeSpeed * deltaTime;
+                     if (transitionAlpha >= 255.0f) {
+                         entityManager.clear();
+                         if (!Engine::LevelLoader::loadLevel(entityManager, pendingLevel)) {
+                             running = false;
+                         } else {
+                             isTransitioning = false;
+                             transitionAlpha = 0.0f;
+                             
+                             auto player = entityManager.getPlayer();
+                             if (player) {
+                                 if (entryDirection == Gameplay::CardinalDirection::East) {
+                                     player->transform.x = 50.0f; // Arrive from West
+                                 } else if (entryDirection == Gameplay::CardinalDirection::West) {
+                                     player->transform.x = entityManager.levelConfig.levelWidth - player->transform.width - 50.0f; // Arrive from East
+                                 }
+                                 camera.update(player->transform.x);
+                             }
+                         }
+                     }
+                 }
+
+                 auto submission = levelEditor.getPendingSubmission();
+                 if (submission) {
+                     std::cout << "\n--- Level Submission ---" << std::endl;
+                     
+                     // Connection Direction Selection
+                     std::cout << "Where will this level be connected?" << std::endl;
+                     std::cout << "1. East" << std::endl;
+                     std::cout << "2. West" << std::endl;
+                     std::cout << "3. North" << std::endl;
+                     std::cout << "4. South" << std::endl;
+                     std::cout << "5. That's it (None)" << std::endl;
+                     std::cout << "Choice: ";
+                     int dirChoice = 5;
+                     std::cin >> dirChoice;
+
+                     if (dirChoice == 1) entityManager.levelConfig.isRightWallClamped = false;
+                     if (dirChoice == 2) entityManager.levelConfig.isLeftWallClamped = false;
+
+                     // 1. Ensure Player exists
+                     if (!entityManager.getPlayer()) {
+                         auto player = std::make_shared<Gameplay::Player>();
+                         player->transform = {200, 300, 50, 50, 10}; 
+                         player->sprite = {Common::TextureID::TEX_PLAYER, 10};
+                         player->physics = {0, 0};
+                         player->playerControl = {600.0f};
+                         player->collider = {50, 50, 0, 0, false, true};
+                         entityManager.addEntity(player);
+                     }
+
+                     // 2. Automatically create LevelExit to level1.json on unclamped sides
+                     if (dirChoice >= 1 && dirChoice <= 4) {
+                         auto exitObj = std::make_shared<Gameplay::StaticObject>();
+                         exitObj->transform.width = 100.0f;
+                         exitObj->transform.height = 2000.0f; // Tall trigger
+                         exitObj->transform.y = -500.0f;
+                         exitObj->transform.zIndex = 0;
+
+                         Gameplay::LevelExit exitComp;
+                         exitComp.nextLevelPath = "assets/levels/level1.json";
+                         exitComp.transitionDuration = 0.5f;
+
+                         if (dirChoice == 1) { // East
+                             exitObj->transform.x = entityManager.levelConfig.levelWidth;
+                             exitComp.direction = Gameplay::CardinalDirection::East;
+                         } else if (dirChoice == 2) { // West
+                             exitObj->transform.x = -100.0f;
+                             exitComp.direction = Gameplay::CardinalDirection::West;
+                         } else if (dirChoice == 3) { // North
+                             exitObj->transform.y = -100.0f;
+                             exitObj->transform.height = 100.0f;
+                             exitObj->transform.width = entityManager.levelConfig.levelWidth;
+                             exitComp.direction = Gameplay::CardinalDirection::North;
+                         } else if (dirChoice == 4) { // South
+                             exitObj->transform.y = 1000.0f; // Arbitrary high value
+                             exitObj->transform.height = 100.0f;
+                             exitObj->transform.width = entityManager.levelConfig.levelWidth;
+                             exitComp.direction = Gameplay::CardinalDirection::South;
+                         }
+
+                         exitObj->exit = exitComp;
+                         exitObj->collider = {exitObj->transform.width, exitObj->transform.height, 0, 0, true, false}; // Trigger
+                         entityManager.addEntity(exitObj);
+                         std::cout << "Added auto-teleport to level1.json for choice " << dirChoice << std::endl;
+                     }
+
+                     std::string name;
+                     std::cout << "Level Name (e.g., custom_level1): ";
+                     std::cin >> name;
+                     std::string filename = "assets/levels/" + name + ".json";
+                     std::string buildFilename = "build/assets/levels/" + name + ".json";
+                     
+                     std::string jsonData = entityManager.toJSON();
+                     
+                     auto saveFile = [](const std::string& path, const std::string& data) {
+                         std::ofstream file(path);
+                         if (file.is_open()) {
+                             file << data;
+                             return true;
+                         }
+                         return false;
+                     };
+
+                     if (saveFile(filename, jsonData)) {
+                         std::cout << "Level saved to " << filename << std::endl;
+                         if (saveFile(buildFilename, jsonData)) {
+                             std::cout << "Build assets synced: " << buildFilename << std::endl;
+                         }
+                         running = false; 
+                     }
+                 }
+
+                 auto player = entityManager.getPlayer();
+                 if (player && !levelEditor.isActive()) camera.update(player->transform.x);
+
+                 renderer.beginFrame();
+                 frameCommands.clear();
+                 entityManager.render(frameCommands);
+                 progressIndicator.render(frameCommands);
+                 levelEditor.render(frameCommands);
+                 renderer.drawCommands(frameCommands, camera.getCameraOffsetX());
+                 if (isTransitioning) renderer.drawOverlay(transitionAlpha);
+                 renderer.endFrame();
+             }
+         } // SDL Window destroyed here
      }
- 
+
      return 0;
  }

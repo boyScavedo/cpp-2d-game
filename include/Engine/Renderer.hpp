@@ -66,7 +66,7 @@ namespace Engine
          * @param cameraOffsetX The horizontal camera offset to apply.
          */
         void drawCommands(const std::vector<Common::RenderCommand> &commands, float cameraOffsetX = 0.0f);
-        
+
         /**
          * @brief Draws a full-screen black overlay with the specified alpha transparency.
          * @param alpha The alpha value (0.0f - 255.0f).

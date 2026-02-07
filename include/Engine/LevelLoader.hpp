@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "Gameplay/ECS/Registry.hpp"
+#include "Gameplay/EntityManager.hpp"
 
 namespace Engine
 {
@@ -9,12 +9,12 @@ namespace Engine
     {
     public:
         /**
-         * @brief Loads a level from a JSON file and populates the ECS Registry.
+         * @brief Loads a level from a JSON file and populates the EntityManager.
          * 
-         * @param registry The ECS registry to populate with entities.
+         * @param entityManager The EntityManager to populate with entities.
          * @param path The path to the JSON level file.
          * @return true if successful, false otherwise.
          */
-        static bool loadLevel(Gameplay::ECS::Registry& registry, const std::string& path);
+        static bool loadLevel(Gameplay::EntityManager& entityManager, const std::string& path);
     };
 }

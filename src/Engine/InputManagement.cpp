@@ -1,3 +1,8 @@
+/**
+ * @file InputManagement.cpp
+ * @brief Implementation of the InputManager class for handling SDL input events.
+ */
+
 #include "Engine/InputManager.hpp"
 
 /**
@@ -36,7 +41,20 @@ Common::InputState Engine::InputManager::update()
     m_state.left = keys[SDL_SCANCODE_A];
     m_state.right = keys[SDL_SCANCODE_D];
     m_state.jump = keys[SDL_SCANCODE_SPACE];
-
+    
+    // Arrow Keys
+    m_state.arrowUp = keys[SDL_SCANCODE_UP];
+    m_state.arrowDown = keys[SDL_SCANCODE_DOWN];
+    m_state.arrowLeft = keys[SDL_SCANCODE_LEFT];
+    m_state.arrowRight = keys[SDL_SCANCODE_RIGHT];
+    
+    // Editor Keys mapping
+    m_state.c = keys[SDL_SCANCODE_C];
+    m_state.backspace = keys[SDL_SCANCODE_BACKSPACE];
+    m_state.enter = keys[SDL_SCANCODE_RETURN];
+    m_state.shift = keys[SDL_SCANCODE_LSHIFT] || keys[SDL_SCANCODE_RSHIFT];
+    m_state.ctrl = keys[SDL_SCANCODE_LCTRL] || keys[SDL_SCANCODE_RCTRL];
+ 
     SDL_MouseButtonFlags mouseButtons = SDL_GetMouseState(nullptr, nullptr);
     m_state.attack = (mouseButtons & SDL_BUTTON_MASK(SDL_BUTTON_LEFT)) != 0;
 

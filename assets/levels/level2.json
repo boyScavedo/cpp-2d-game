@@ -1,6 +1,6 @@
 {
     "isLeftWallClamped": false,
-    "isRightWallClamped": true,
+    "isRightWallClamped": false,
     "entities": [
         {
             "transform": {
@@ -56,6 +56,25 @@
             "exit": {
                 "direction": "West",
                 "nextLevel": "assets/levels/level1.json"
+            }
+        },
+        {
+            "name": "LevelExit_East",
+            "transform": {
+                "x": "WORLD_END",
+                "y": 0.0,
+                "width": 80.0,
+                "height": 720.0
+            },
+            "collider": {
+                "width": 80.0,
+                "height": 720.0,
+                "isTrigger": true
+            },
+            "exit": {
+                "direction": "East",
+                "nextLevel": "assets/levels/level3.json",
+                "transitionDuration": 1.0
             }
         }
     ]

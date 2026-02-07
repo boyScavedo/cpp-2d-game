@@ -1,3 +1,8 @@
+/**
+ * @file WindowManager.cpp
+ * @brief Implementation of the WindowManager class for SDL window and event handling.
+ */
+
 #include <string>
 
 #include "Engine/WindowManager.hpp"

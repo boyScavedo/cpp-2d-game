@@ -18,6 +18,19 @@ namespace Common
         bool attack = false;           /**< True if the attack key/button is pressed. */
         bool toggleFullScreen = false; /**< True if the fullscreen toggle key is pressed. */
         bool quit = false;             /**< True if the quit event has been triggered. */
+
+        // Arrow Keys (Separate from WASD)
+        bool arrowUp = false;
+        bool arrowDown = false;
+        bool arrowLeft = false;
+        bool arrowRight = false;
+
+        // Editor Keys
+        bool c = false;
+        bool backspace = false;
+        bool enter = false;
+        bool shift = false;
+        bool ctrl = false;
     };
 
     /**
@@ -30,5 +43,8 @@ namespace Common
         float width = 0.0f, height = 0.0f;                         /**< The width and height of the rendered element. */
         Common::TextureID textureID = Common::TextureID::TEX_NONE; /**< The ID of the texture to render. */
         float scrollFactor = 1.0f;                                 /**< The scroll factor for parallax effects (0.0 = fixed, 1.0 = full camera scroll). */
+        
+        // Custom Color (used if textureID == TEX_NONE)
+        unsigned char colorR = 0, colorG = 255, colorB = 255, colorA = 255; 
     };
 }

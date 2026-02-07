@@ -14,11 +14,14 @@ namespace Engine
     class Camera
     {
     private:
-        float cameraOffsetX = 0.0f;                               /**< The current horizontal offset of the camera. */
-        float minCameraOffsetX = Common::MINIMUM_CAMERA_OFFSET_X; /**< The minimum allowed camera offset. */
-        float maxCameraOffsetX = Common::MAXIMUM_CAMERA_OFFSET_X; /**< The maximum allowed camera offset. */
-
+        float cameraOffsetX = 0.0f;                               
+        float minCameraOffsetX = 0.0f; 
+        float maxCameraOffsetX = 2560.0f; 
     public:
+        float getMinCameraOffsetX() const { return minCameraOffsetX; }
+        float getMaxCameraOffsetX() const { return maxCameraOffsetX; }
+        void setMinCameraOffsetX(float value) { minCameraOffsetX = value; }
+        void setMaxCameraOffsetX(float value) { maxCameraOffsetX = value; }
         /**
          * @brief Gets the current horizontal offset of the camera.
          * @return The camera's X offset in pixels.

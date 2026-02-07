@@ -73,6 +73,24 @@
             }
         },
         {
+            "name": "TestPlatform",
+            "transform": {
+                "x": 400.0,
+                "y": 600.0,
+                "width": 200.0,
+                "height": 50.0
+            },
+            "sprite": {
+                "textureID": 0,
+                "zIndex": 5
+            },
+            "collider": {
+                "width": 200.0,
+                "height": 50.0,
+                "isSolid": true
+            }
+        },
+        {
             "name": "LevelExit_East",
             "transform": {
                 "x": "WORLD_END",
