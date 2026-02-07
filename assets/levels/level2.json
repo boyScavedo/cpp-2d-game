@@ -1,6 +1,7 @@
 {
     "isLeftWallClamped": false,
     "isRightWallClamped": false,
+    "levelWidth": 2560.0,
     "entities": [
         {
             "transform": {

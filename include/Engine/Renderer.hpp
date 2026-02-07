@@ -56,7 +56,7 @@ namespace Engine
         bool loadTexture(Common::TextureID id, const std::string &path);
 
         /**
-         * @brief Prepares the renderer for drawing a new frame.
+         * @brief Prepares the renderer for drawing a new frame by clearing the screen.
          */
         void beginFrame();
 
@@ -68,6 +68,12 @@ namespace Engine
         void drawCommands(const std::vector<Common::RenderCommand> &commands, float cameraOffsetX = 0.0f);
 
         /**
+         * @brief Draws a list of render commands in fixed UI space (no camera offset).
+         * @param commands The vector of render commands to draw.
+         */
+        void drawUI(const std::vector<Common::RenderCommand> &commands);
+
+        /**
          * @brief Draws a full-screen black overlay with the specified alpha transparency.
          * @param alpha The alpha value (0.0f - 255.0f).
          */
@@ -77,6 +83,13 @@ namespace Engine
          * @brief Finalizes and presents the current frame to the screen.
          */
         void endFrame();
+
+        /**
+         * @brief Returns the raw SDL_Renderer pointer for coordinate conversion.
+         * @return SDL_Renderer* The internal SDL renderer.
+         */
+        SDL_Renderer* getSDLRenderer() const { return m_sdlRenderer; }
+
 
     private:
         SDL_Renderer *m_sdlRenderer;

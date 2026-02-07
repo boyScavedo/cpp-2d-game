@@ -54,9 +54,34 @@ Common::InputState Engine::InputManager::update()
     m_state.enter = keys[SDL_SCANCODE_RETURN];
     m_state.shift = keys[SDL_SCANCODE_LSHIFT] || keys[SDL_SCANCODE_RSHIFT];
     m_state.ctrl = keys[SDL_SCANCODE_LCTRL] || keys[SDL_SCANCODE_RCTRL];
+    m_state.pause = keys[SDL_SCANCODE_P] || keys[SDL_SCANCODE_ESCAPE];
  
-    SDL_MouseButtonFlags mouseButtons = SDL_GetMouseState(nullptr, nullptr);
-    m_state.attack = (mouseButtons & SDL_BUTTON_MASK(SDL_BUTTON_LEFT)) != 0;
+    float mx, my;
+    SDL_MouseButtonFlags mouseButtons = SDL_GetMouseState(&mx, &my);
+    m_state.mouseX = static_cast<int>(mx);
+    m_state.mouseY = static_cast<int>(my);
+    m_state.mouseLeftDown = (mouseButtons & SDL_BUTTON_MASK(SDL_BUTTON_LEFT)) != 0;
+    m_state.attack = m_state.mouseLeftDown;
+
+    return m_state;
+}
+
+Common::InputState Engine::InputManager::update(SDL_Renderer* renderer)
+{
+    // First, do all the regular input polling
+    update();
+
+    // Then convert mouse coordinates from window space to logical renderer space
+    if (renderer) {
+        float mx, my;
+        SDL_GetMouseState(&mx, &my);
+        
+        float logicalX, logicalY;
+        if (SDL_RenderCoordinatesFromWindow(renderer, mx, my, &logicalX, &logicalY)) {
+            m_state.mouseX = static_cast<int>(logicalX);
+            m_state.mouseY = static_cast<int>(logicalY);
+        }
+    }
 
     return m_state;
 }

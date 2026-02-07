@@ -31,5 +31,12 @@ namespace Engine
          * `up`, `down`, `left`, `right`, `jump`, `attack`, `toggleFullScreen`, and `quit`.
          */
         Common::InputState update();
+
+        /**
+         * @brief Polls system input with mouse coordinates converted to logical renderer space.
+         * @param renderer The SDL_Renderer used for coordinate conversion.
+         * @return Common::InputState The updated input state with logical mouse coordinates.
+         */
+        Common::InputState update(SDL_Renderer* renderer);
     };
 }

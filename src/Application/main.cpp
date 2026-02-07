@@ -16,6 +16,7 @@
 #include "Engine/AuthService.hpp"
 #include "Admin/LevelEditor.hpp"
 #include "Gameplay/CLIHandler.hpp"
+#include "Gameplay/UI/MenuSystem.hpp"
 #include "Gameplay/UI/ProgressIndicator.hpp"
 #include "Gameplay/EntityManager.hpp"
 #include "Gameplay/Entity.hpp"
@@ -107,62 +108,115 @@
              float transitionAlpha = 0.0f;
              std::string pendingLevel = "";
              Gameplay::CardinalDirection entryDirection = Gameplay::CardinalDirection::East;
-             float currentTransitionDuration = 0.5f;
+              float currentTransitionDuration = 0.5f;
 
-             while (running) {
-                 std::vector<Common::RenderCommand> frameCommands;
-                 Uint64 currentTime = SDL_GetTicks();
-                 float deltaTime = (currentTime - lastTime) / 1000.0f;
-                 lastTime = currentTime;
-                 if (deltaTime > 0.1f) deltaTime = 0.1f;
+              Common::GameState gameState = Common::GameState::MAIN_MENU;
+              Gameplay::UI::MenuSystem menuSystem;
 
-                 window.fpsCounter(currentTime, lastFpsTime, fps);
-                 Common::InputState input = inputSystem.update();
-                 if (input.quit) {
-                     running = false;
-                     appRunning = false;
-                 }
-                 window.update(input);
+              while (running && gameState != Common::GameState::EXITING) {
+                  std::vector<Common::RenderCommand> frameCommands;
+                  std::vector<Common::RenderCommand> uiCommands;
 
-                 if (levelEditor.isActive()) {
-                     levelEditor.update(deltaTime, input);
-                 }
+                  Uint64 currentTime = SDL_GetTicks();
+                  float deltaTime = (currentTime - lastTime) / 1000.0f;
+                  lastTime = currentTime;
+                  if (deltaTime > 0.1f) deltaTime = 0.1f;
 
-                 if (!isTransitioning) {
-                     entityManager.update(deltaTime, input);
-                     auto player = entityManager.getPlayer();
-                     if (player) progressIndicator.update(player->transform.x, Common::WORLD_WIDTH);
+                  window.fpsCounter(currentTime, lastFpsTime, fps);
+                  Common::InputState input = inputSystem.update(renderer.getSDLRenderer());
+                  if (input.quit) {
+                      gameState = Common::GameState::EXITING;
+                      appRunning = false;
+                  }
+                  window.update(input);
 
-                     auto exitData = entityManager.checkCollisions();
-                     if (exitData.has_value()) {
-                         isTransitioning = true;
-                         pendingLevel = exitData->nextLevelPath;
-                         entryDirection = exitData->direction;
-                         currentTransitionDuration = exitData->transitionDuration;
-                     }
-                 } else {
-                     float fadeSpeed = (currentTransitionDuration > 0.0f) ? (255.0f / currentTransitionDuration) : 500.0f;
-                     transitionAlpha += fadeSpeed * deltaTime;
-                     if (transitionAlpha >= 255.0f) {
-                         entityManager.clear();
-                         if (!Engine::LevelLoader::loadLevel(entityManager, pendingLevel)) {
-                             running = false;
-                         } else {
-                             isTransitioning = false;
-                             transitionAlpha = 0.0f;
-                             
-                             auto player = entityManager.getPlayer();
-                             if (player) {
-                                 if (entryDirection == Gameplay::CardinalDirection::East) {
-                                     player->transform.x = 50.0f; // Arrive from West
-                                 } else if (entryDirection == Gameplay::CardinalDirection::West) {
-                                     player->transform.x = entityManager.levelConfig.levelWidth - player->transform.width - 50.0f; // Arrive from East
-                                 }
-                                 camera.update(player->transform.x);
-                             }
-                         }
-                     }
-                 }
+                  // Pause Toggle (Debounced simple way)
+                  static bool pauseWasPressed = false;
+                  if (input.pause && !pauseWasPressed) {
+                      if (gameState == Common::GameState::RUNNING) gameState = Common::GameState::PAUSED;
+                      else if (gameState == Common::GameState::PAUSED) gameState = Common::GameState::RUNNING;
+                  }
+                  pauseWasPressed = input.pause;
+
+                  if (gameState == Common::GameState::MAIN_MENU) {
+                      int menuAction = menuSystem.updateMainMenu(input, uiCommands);
+                      if (menuAction == 1) {
+                          gameState = Common::GameState::RUNNING;
+                      } else if (menuAction == 2) {
+                          gameState = Common::GameState::EXITING;
+                          appRunning = false;
+                      }
+                  } 
+                  else if (gameState == Common::GameState::PAUSED) {
+                      // Render game behind pause menu
+                      entityManager.render(frameCommands);
+                      int pauseAction = menuSystem.updatePauseMenu(input, uiCommands);
+                      if (pauseAction == 1) gameState = Common::GameState::RUNNING;
+                      else if (pauseAction == 2) gameState = Common::GameState::MAIN_MENU;
+                      else if (pauseAction == 3) {
+                          gameState = Common::GameState::EXITING;
+                          appRunning = false;
+                      }
+                  }
+                  else if (gameState == Common::GameState::RUNNING) {
+                      if (levelEditor.isActive()) {
+                          levelEditor.update(deltaTime, input);
+                      }
+
+                      if (!isTransitioning) {
+                          entityManager.update(deltaTime, input);
+                          auto player = entityManager.getPlayer();
+                          if (player) progressIndicator.update(player->transform.x, Common::WORLD_WIDTH);
+
+                          auto exitData = entityManager.checkCollisions();
+                          if (exitData.has_value()) {
+                              isTransitioning = true;
+                              pendingLevel = exitData->nextLevelPath;
+                              entryDirection = exitData->direction;
+                              currentTransitionDuration = exitData->transitionDuration;
+                          }
+                      } else {
+                          float fadeSpeed = (currentTransitionDuration > 0.0f) ? (255.0f / currentTransitionDuration) : 500.0f;
+                          transitionAlpha += fadeSpeed * deltaTime;
+                          if (transitionAlpha >= 255.0f) {
+                              entityManager.clear();
+                              if (!Engine::LevelLoader::loadLevel(entityManager, pendingLevel)) {
+                                  running = false;
+                              } else {
+                                  isTransitioning = false;
+                                  transitionAlpha = 0.0f;
+                                  
+                                  auto player = entityManager.getPlayer();
+                                  if (player) {
+                                      if (entryDirection == Gameplay::CardinalDirection::East) {
+                                          player->transform.x = 50.0f; // Arrive from West
+                                      } else if (entryDirection == Gameplay::CardinalDirection::West) {
+                                          player->transform.x = entityManager.levelConfig.levelWidth - player->transform.width - 50.0f; // Arrive from East
+                                      }
+                                      camera.update(player->transform.x);
+                                  }
+                              }
+                          }
+                      }
+
+                      entityManager.render(frameCommands);
+                  }
+
+                  // Common Rendering for transitions or editor
+                  if (gameState == Common::GameState::RUNNING) {
+                      if (levelEditor.isActive() && !isTransitioning) {
+                          levelEditor.render(frameCommands);
+                      }
+                      progressIndicator.render(frameCommands);
+                  }
+
+                  if (isTransitioning) {
+                      frameCommands.push_back({0, 0, (float)Common::SCREEN_WIDTH, (float)Common::SCREEN_HEIGHT, 
+                        Common::TextureID::TEX_NONE, 1.0f, 0, 0, 0, (unsigned char)transitionAlpha});
+                  }
+
+                  renderer.drawCommands(frameCommands, camera.getCameraOffsetX());
+                  renderer.drawUI(uiCommands);
 
                  auto submission = levelEditor.getPendingSubmission();
                  if (submission) {
@@ -264,8 +318,14 @@
                  progressIndicator.render(frameCommands);
                  levelEditor.render(frameCommands);
                  renderer.drawCommands(frameCommands, camera.getCameraOffsetX());
+
+                 if (gameState == Common::GameState::PAUSED || gameState == Common::GameState::MAIN_MENU) {
+                    renderer.drawUI(uiCommands); 
+                 }
                  if (isTransitioning) renderer.drawOverlay(transitionAlpha);
                  renderer.endFrame();
+                 frameCommands.clear();
+                 uiCommands.clear();
              }
          } // SDL Window destroyed here
      }

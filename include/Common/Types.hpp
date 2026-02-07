@@ -5,6 +5,16 @@
 namespace Common
 {
     /**
+     * @enum GameState
+     * @brief Defines the global states of the application.
+     */
+    enum class GameState {
+        MAIN_MENU,
+        RUNNING,
+        PAUSED,
+        EXITING
+    };
+    /**
      * @struct InputState
      * @brief Represents the current state of user input, used to communicate from the Engine to Gameplay modules.
      */
@@ -31,6 +41,12 @@ namespace Common
         bool enter = false;
         bool shift = false;
         bool ctrl = false;
+        bool pause = false; // 'P' or Escape
+
+        // Mouse Input
+        int mouseX = 0;
+        int mouseY = 0;
+        bool mouseLeftDown = false;
     };
 
     /**

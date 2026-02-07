@@ -51,10 +51,6 @@ namespace Engine
             return;
         SDL_SetRenderDrawColor(m_sdlRenderer, 0, 0, 0, 255);
         SDL_RenderClear(m_sdlRenderer);
-
-        SDL_FRect gameArea = {0, 0, (float)Common::SCREEN_WIDTH, (float)Common::SCREEN_HEIGHT};
-        SDL_SetRenderDrawColor(m_sdlRenderer, 30, 30, 30, 255);
-        SDL_RenderFillRect(m_sdlRenderer, &gameArea);
     }
 
     /**
@@ -173,6 +169,7 @@ namespace Engine
                 }
                 else if (cmd.textureID == Common::TextureID::TEX_NONE)
                 {
+                    SDL_SetRenderDrawBlendMode(m_sdlRenderer, SDL_BLENDMODE_BLEND);
                     SDL_SetRenderDrawColor(m_sdlRenderer, cmd.colorR, cmd.colorG, cmd.colorB, cmd.colorA);
                 }
                 else if (cmd.textureID == Common::TextureID::TEX_BACKGROUND_FAR)
@@ -193,6 +190,10 @@ namespace Engine
                 }
 
                 SDL_RenderFillRect(m_sdlRenderer, &dest);
+                // Reset blend mode just in case
+                if (cmd.textureID == Common::TextureID::TEX_NONE) {
+                    SDL_SetRenderDrawBlendMode(m_sdlRenderer, SDL_BLENDMODE_NONE);
+                }
             }
         }
     }
@@ -220,6 +221,11 @@ namespace Engine
 
         // Restore original blend mode
         SDL_SetRenderDrawBlendMode(m_sdlRenderer, prevMode);
+    }
+
+    void Renderer::drawUI(const std::vector<Common::RenderCommand> &commands)
+    {
+        drawCommands(commands, 0.0f);
     }
 
     /**
