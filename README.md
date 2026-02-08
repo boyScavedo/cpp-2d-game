@@ -1,4 +1,24 @@
-# C++ 2D Platformer Game
+```mermaid
+sequenceDiagram
+participant Main as Main Loop
+participant Input as InputManager
+participant Window as WindowManager
+participant Player as Player
+participant Movement as PlayerMovement
+
+Main->>Input: poll events / update()
+Input-->>Main: InputState (left/right/jump/attack/toggleFullScreen/quit)
+Main->>Window: fpsCounter(currentTick, lastFpsTime, fps)
+Main->>Window: update(InputState)
+Window-->>Main: title updated / fullscreen toggled (if requested)
+Main->>Player: update(deltaTime, InputState)
+Player->>Movement: movement.update(deltaTime, InputState)
+Movement-->>Player: updated position / render command
+Player-->>Main: getRenderCommand()
+Main->>Window: present(render command)
+```
+
+> Below is the prequisites for Windows OS, but follow the generalized steps for other OS
 
 A 2D sidescrolling roguelike-metroidvania game built using SDL3 and C++20. Features include fluid player movement with physics, collision detection, parallax scrolling backgrounds, JSON-based level loading/saving, in-game level editor, and basic authentication system.
 
