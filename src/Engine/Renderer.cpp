@@ -1,3 +1,14 @@
+/**
+ * @file Renderer.cpp
+ * @brief Implementation of the Renderer class for SDL-based drawing.
+ *
+ * This file provides the concrete implementation of rendering functionality using SDL3.
+ * The Renderer manages texture caching, handles different rendering modes (tiled backgrounds,
+ * solid colors, UI elements), and provides methods for frame management. It supports
+ * parallax scrolling for background layers and logical presentation for consistent
+ * rendering across different window sizes.
+ */
+
 #include <vector>
 #include <string>
 
@@ -16,11 +27,13 @@ namespace Engine
      *
      * Initializes the internal SDL_Renderer associated with the provided SDL_Window and sets
      * the renderer's logical presentation to the engine's SCREEN_WIDTH and SCREEN_HEIGHT
-     * using letterbox scaling.
+     * using letterbox scaling. This ensures consistent rendering regardless of window size.
      *
      * @param window SDL_Window to create the renderer for; may be nullptr.
      *
-     * If renderer creation fails, an error is logged and the internal renderer remains unset. */
+     * If renderer creation fails, an error is logged and the internal renderer remains unset.
+     * The renderer is configured for hardware acceleration and logical presentation.
+     */
     Renderer::Renderer(SDL_Window *window)
     {
         m_sdlRenderer = SDL_CreateRenderer(window, NULL);
@@ -46,10 +59,6 @@ namespace Engine
             return;
         SDL_SetRenderDrawColor(m_sdlRenderer, 0, 0, 0, 255);
         SDL_RenderClear(m_sdlRenderer);
-
-        SDL_FRect gameArea = {0, 0, (float)Common::SCREEN_WIDTH, (float)Common::SCREEN_HEIGHT};
-        SDL_SetRenderDrawColor(m_sdlRenderer, 30, 30, 30, 255);
-        SDL_RenderFillRect(m_sdlRenderer, &gameArea);
     }
 
     /**
@@ -166,6 +175,11 @@ namespace Engine
                 {
                     SDL_SetRenderDrawColor(m_sdlRenderer, 255, 0, 0, 255);
                 }
+                else if (cmd.textureID == Common::TextureID::TEX_NONE)
+                {
+                    SDL_SetRenderDrawBlendMode(m_sdlRenderer, SDL_BLENDMODE_BLEND);
+                    SDL_SetRenderDrawColor(m_sdlRenderer, cmd.colorR, cmd.colorG, cmd.colorB, cmd.colorA);
+                }
                 else if (cmd.textureID == Common::TextureID::TEX_BACKGROUND_FAR)
                 {
                     SDL_SetRenderDrawColor(m_sdlRenderer, 50, 50, 100, 255); // Dark blue for far background
@@ -184,17 +198,25 @@ namespace Engine
                 }
 
                 SDL_RenderFillRect(m_sdlRenderer, &dest);
+                // Reset blend mode just in case
+                if (cmd.textureID == Common::TextureID::TEX_NONE)
+                {
+                    SDL_SetRenderDrawBlendMode(m_sdlRenderer, SDL_BLENDMODE_NONE);
+                }
             }
         }
     }
 
     void Renderer::drawOverlay(float alpha)
     {
-        if (!m_sdlRenderer) return;
+        if (!m_sdlRenderer)
+            return;
 
         // Clamp alpha
-        if (alpha < 0.0f) alpha = 0.0f;
-        if (alpha > 255.0f) alpha = 255.0f;
+        if (alpha < 0.0f)
+            alpha = 0.0f;
+        if (alpha > 255.0f)
+            alpha = 255.0f;
 
         // Save original blend mode
         SDL_BlendMode prevMode;
@@ -202,7 +224,7 @@ namespace Engine
 
         // Enable Blending
         SDL_SetRenderDrawBlendMode(m_sdlRenderer, SDL_BLENDMODE_BLEND);
-        
+
         // Draw Full Screen Black Rect
         SDL_SetRenderDrawColor(m_sdlRenderer, 0, 0, 0, static_cast<Uint8>(alpha));
         // Use Common::SCREEN_WIDTH/HEIGHT
@@ -211,6 +233,11 @@ namespace Engine
 
         // Restore original blend mode
         SDL_SetRenderDrawBlendMode(m_sdlRenderer, prevMode);
+    }
+
+    void Renderer::drawUI(const std::vector<Common::RenderCommand> &commands)
+    {
+        drawCommands(commands, 0.0f);
     }
 
     /**

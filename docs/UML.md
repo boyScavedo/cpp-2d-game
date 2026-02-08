@@ -1,4 +1,4 @@
-# UML Diagrams for C++ 2D Game
+# UML Diagrams for C++ 2D Platformer Game
 
 This document contains UML diagrams generated using Mermaid for the current codebase.
 
@@ -11,11 +11,20 @@ classDiagram
         class WindowManager
         class Renderer
         class InputManager
+        class LevelLoader
     }
     namespace Gameplay {
+        class Entity
+        class EntityManager
         class Player
-        class PlayerMovement
-
+        class StaticObject
+    }
+    namespace Admin {
+        class LevelEditor
+    }
+    namespace Application {
+        class AuthService
+        class CLIHandler
     }
 
     class Camera {
@@ -24,6 +33,8 @@ classDiagram
         -float maxCameraOffsetX
         +float getCameraOffsetX()
         +void setCameraOffsetX(float)
+        +float getMinCameraOffsetX()
+        +float getMaxCameraOffsetX()
         +void update(float)
     }
 
@@ -52,32 +63,73 @@ classDiagram
         +Common::InputState update()
     }
 
-    class Player {
-        -PlayerMovement movement
-        +void update(float, Common::InputState)
-        +Common::RenderCommand getRenderCommand()
-        +std::pair<float, float> getPosition()
+    class LevelLoader {
+        +static bool loadLevel(Gameplay::EntityManager&, const std::string&)
     }
 
-    class PlayerMovement {
-        -float acceleration
-        -float friction
-        -float gravity
-        -float terminalVelocity
-        -float jumpForce
-        -float maxSpeed
-        -float m_x, m_y
-        -float m_velocityX, m_velocityY
-        -bool m_canJump
+    class Entity {
+        <<abstract>>
+        +Transform transform
+        +Sprite sprite
+        +Collider* collider
+        +virtual void update(float)
+        +virtual std::vector<Common::RenderCommand> getRenderCommands()
+    }
+
+    class EntityManager {
+        -std::vector<std::shared_ptr<Entity>> m_entities
+        -LevelConfig levelConfig
+        +void addEntity(std::shared_ptr<Entity>)
+        +void removeEntity(std::shared_ptr<Entity>)
+        +const std::vector<std::shared_ptr<Entity>>& getEntities()
+        +std::string getEntityManagerJSON()
+        +bool loadFromJSON(const std::string&)
+    }
+
+    class Player {
         +void update(float, Common::InputState)
-        +Common::RenderCommand getRenderCommand()
-        +std::pair<float, float> getPosition()
+        +std::vector<Common::RenderCommand> getRenderCommands()
+    }
+
+    class StaticObject {
+        +void update(float)
+        +std::vector<Common::RenderCommand> getRenderCommands()
+    }
+
+    class LevelEditor {
+        -Gameplay::EntityManager& m_entityManager
+        -Engine::Camera& m_camera
+        -std::shared_ptr<Entity> m_selectedEntity
+        -bool m_active
+        +LevelEditor(EntityManager&, Camera&)
+        +void update(float, Common::InputState)
+        +void render(std::vector<Common::RenderCommand>&)
+        +bool isActive()
+        +void setActive(bool)
+        +bool hasPendingSubmission()
+        +std::optional<Suggestion> getPendingSubmission()
+    }
+
+    class AuthService {
+        +std::optional<Engine::User> authenticate(const std::string&, const std::string&)
+        +bool registerUser(const std::string&, const std::string&)
+    }
+
+    class CLIHandler {
+        +static std::optional<Engine::User> runAuthFlow(AuthService&)
+        +static AdminDashboardResult runAdminDashboard(const Engine::User&)
     }
 
     WindowManager --> Renderer : provides SDL_Window
-    Player *-- PlayerMovement : has-a
-    Renderer --> Player : draws
-    Camera --> Player : follows
+    EntityManager --> Entity : manages
+    Player --|> Entity : inherits
+    StaticObject --|> Entity : inherits
+    LevelEditor --> EntityManager : edits
+    LevelEditor --> Camera : uses
+    CLIHandler --> AuthService : uses
+    LevelLoader --> EntityManager : loads into
+    Renderer --> Entity : draws
+    Camera --> Entity : follows
 ```
 
 ## Sequence Diagram
@@ -85,29 +137,65 @@ classDiagram
 ```mermaid
 sequenceDiagram
     participant Main
+    participant AuthService
+    participant CLIHandler
     participant WindowManager
     participant InputManager
-    participant Player
-    participant Camera
     participant Renderer
+    participant Camera
+    participant EntityManager
+    participant LevelEditor
 
-    Main->>WindowManager: create
-    Main->>InputManager: create
-    Main->>Renderer: create(window)
-    Main->>Camera: create
-    Main->>Player: create
+    Main->>AuthService: create
+    Main->>CLIHandler: runAuthFlow(authService)
+    CLIHandler-->>Main: User (optional)
 
-    loop Main Game Loop
-        Main->>InputManager: update()
-        InputManager-->>Main: InputState
-        Main->>WindowManager: update(InputState)
-        Main->>Player: update(deltaTime, InputState)
-        Player->>Player: getPosition()
-        Main->>Camera: update(playerX)
-        Main->>Renderer: beginFrame()
-        Main->>Player: getRenderCommand()
-        Player-->>Main: RenderCommand
-        Main->>Renderer: drawCommands(commands, cameraOffset)
-        Main->>Renderer: endFrame()
+    alt User authenticated
+        Main->>CLIHandler: runAdminDashboard(user)
+        CLIHandler-->>Main: AdminDashboardResult
+
+        Main->>WindowManager: create
+        Main->>InputManager: create
+        Main->>Renderer: create(window)
+        Main->>Camera: create
+        Main->>EntityManager: create
+
+        alt Create new level
+            Main->>EntityManager: initialize empty level
+        else Load existing level
+            Main->>LevelLoader: loadLevel(entityManager, path)
+        end
+
+        alt Enter editor mode
+            Main->>LevelEditor: create(entityManager, camera)
+            Main->>LevelEditor: setActive(true)
+        end
+
+        loop Game Loop
+            Main->>InputManager: update()
+            InputManager-->>Main: InputState
+
+            alt Editor active
+                Main->>LevelEditor: update(deltaTime, input)
+                Main->>LevelEditor: render(commands)
+            else Game mode
+                Main->>EntityManager: update(deltaTime, input)
+                Main->>EntityManager: getRenderCommands(commands)
+            end
+
+            Main->>Camera: update(playerX)
+            Main->>Renderer: beginFrame()
+            Main->>Renderer: drawCommands(commands, cameraOffset)
+            Main->>Renderer: endFrame()
+        end
+
+        alt Level submission pending
+            Main->>LevelEditor: getPendingSubmission()
+            LevelEditor-->>Main: Suggestion
+            Main->>CLIHandler: prompt for level name
+            Main->>EntityManager: getEntityManagerJSON()
+            Main->>Main: save to build/assets/levels/
+            Main->>Main: save to assets/levels/
+        end
     end
 ```

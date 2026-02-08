@@ -1,10 +1,10 @@
-# Project Documentation for C++ 2D Game
+# Project Documentation for C++ 2D Platformer Game
 
 ## Introduction
 
-This document serves as a comprehensive guide to the C++ 2D Game project, a sidescrolling roguelike-metroidvania game built using SDL3. The project is structured into several namespaces and modules to organize code logically: `Common` for shared constants and types, `Engine` for core engine components, `Gameplay` for game-specific logic, and `Utils` for utility functions. This documentation explains each module, class, function, variable, and namespace in detail, akin to chapters in a book, providing explanations on their purpose, usage, and interactions.
+This document serves as a comprehensive guide to the C++ 2D Platformer Game project, a sidescrolling roguelike-metroidvania game built using SDL3. The project is structured into several namespaces and modules to organize code logically: `Common` for shared constants and types, `Engine` for core engine components, `Gameplay` for game-specific logic, `Admin` for level editing tools, and `Utils` for utility functions. This documentation explains each module, class, function, variable, and namespace in detail, akin to chapters in a book, providing explanations on their purpose, usage, and interactions.
 
-The game features a player character that can move, jump, and interact in a 2D world with parallax scrolling backgrounds. The engine handles window management, rendering, input, and camera following. The main loop in `main.cpp` orchestrates these components to run the game.
+The game features a player character with fluid physics-based movement, collision detection, parallax scrolling backgrounds, JSON-based level loading/saving, in-game level editor, and authentication system. The engine handles window management, rendering, input, camera following, and level management. The main loop in `main.cpp` orchestrates these components to run the game.
 
 ### Project Structure
 
@@ -13,15 +13,18 @@ The game features a player character that can move, jump, and interact in a 2D w
 - `docs/`: Documentation files, including this one and UML diagrams.
 - `build/`: Build artifacts (not documented here).
 - `assets/`: Game assets including textures and level data (JSON).
+- `lib/`: Third-party libraries (nlohmann/json for JSON parsing).
 
 ## Chapter 1: Design Philosophy & Best Practices
 
 This project adheres to modern C++ game development standards, specifically focusing on **Data-Driven Design** and **Separation of Concerns**.
 
 ### Data-Driven Design
+
 A core architectural decision was to decouple **content** from **code**. Instead of hardcoding level layouts and entity positions in C++, we use external data files (JSON).
 
 **Rationale**:
+
 - **Iteration Speed**: Game Designers can tweak levels in a text editor without triggering a C++ recompile.
 - **Scalability**: Adding new levels requires zero code changes.
 - **Modding Support**: Players can create custom levels by sharing `.json` files.
@@ -31,7 +34,9 @@ A core architectural decision was to decouple **content** from **code**. Instead
 We use the industry-standard `nlohmann/json` library for robust parsing. This avoids "reinventing the wheel" for text parsing and ensures high reliability.
 
 ### Separation of Concerns
+
 Each module has a strict responsibility:
+
 - `Engine`: Handles "How things run" (Rendering, Input). It knows nothing about game rules.
 - `Gameplay`: Handles "What happens" (Player logic, Level loading).
 - `Data`: Handles "Where things are" (JSON files).
@@ -135,7 +140,7 @@ Located in `include/Engine/LevelLoader.hpp` and `src/Engine/LevelLoader.cpp`.
 
 #### Methods
 
-- `static bool loadLevel(Gameplay::ECS::Registry &registry, const std::string &path)`: 
+- `static bool loadLevel(Gameplay::ECS::Registry &registry, const std::string &path)`:
   - Reads a JSON file from disk.
   - Mutates the provided `Gameplay::ECS::Registry` in-place by creating entities and components.
   - Returns a `bool` success flag (true on success, false on failure).
@@ -226,6 +231,7 @@ The `Gameplay` namespace contains game-specific logic for the player and impleme
 Level configuration is managed via the `Registry::LevelConfig` struct and the provided components.
 
 #### Registry::LevelConfig Struct
+
 - `bool isLeftWallClamped`: If true, the world's left border is a solid wall.
 - `bool isRightWallClamped`: If true, the world's right border is a solid wall.
 
@@ -240,7 +246,9 @@ The `Registry` class in `Gameplay::ECS` is the heart of the game state. It store
 Usage: The `Registry` is updated by various `Systems` (Physics, Input, Collision) in the main game loop. Entity properties are modified by changing their associated components in the maps.
 
 ### ECS Components
+
 Located in `include/Gameplay/ECS/Components.hpp`. These POD structs define entity data.
+
 - **Transform**: Stores `x`, `y` position, `width`, `height`, and `zIndex`.
 - **Physics**: Handles `velocityX`, `velocityY`, `gravity`, `friction`, and `isGrounded` state.
 - **Sprite**: Stores `textureID` and a `zIndex` for layering.
@@ -250,7 +258,9 @@ Located in `include/Gameplay/ECS/Components.hpp`. These POD structs define entit
 - **LevelExit**: Stores transition destination (`nextLevelPath`) and direction.
 
 ### ECS Systems
+
 Located in `include/Gameplay/ECS/`. These classes process logic by iterating over entity components.
+
 - **InputSystem**: Maps SDL input to the `Physics` component of entities with `PlayerControl`.
 - **PhysicsSystem**: Applies gravity, friction, and velocity to `Transform`. Handles world boundary clamping.
 - **CollisionSystem**: Checks for AABB intersections between `Collider` components. Triggers level transitions.
@@ -288,11 +298,11 @@ The main application is in `src/Application/main.cpp`.
 - Initializes window, input, renderer, camera, and the ECS `Registry`.
 - Pre-loads initial level and textures.
 - Main Game Loop:
-    - Calculates deltaTime and updates FPS.
-    - Polls user input.
-    - Updates ECS Systems (`InputSystem`, `PhysicsSystem`, `CollisionSystem`).
-    - Updates Camera position.
-    - Renders scene via `RenderSystem` and `Renderer`.
+  - Calculates deltaTime and updates FPS.
+  - Polls user input.
+  - Updates ECS Systems (`InputSystem`, `PhysicsSystem`, `CollisionSystem`).
+  - Updates Camera position.
+  - Renders scene via `RenderSystem` and `Renderer`.
 - Handles quit and fullscreen toggle.
 
 ### Key Variables

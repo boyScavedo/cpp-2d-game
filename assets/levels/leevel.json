@@ -1,0 +1,30 @@
+{
+    "entities": [
+        {
+            "collider": {
+                "height": 100.0,
+                "isSolid": true,
+                "isTrigger": false,
+                "offsetX": 0.0,
+                "offsetY": 0.0,
+                "width": 200.0
+            },
+            "id": 0,
+            "sprite": {
+                "textureID": 0,
+                "zIndex": 5
+            },
+            "transform": {
+                "height": 100.0,
+                "width": 200.0,
+                "x": 199.6016082763672,
+                "y": 620.0,
+                "zIndex": 5
+            },
+            "type": "StaticObject"
+        }
+    ],
+    "isLeftWallClamped": true,
+    "isRightWallClamped": true,
+    "levelWidth": 2560.0
+}

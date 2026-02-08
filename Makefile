@@ -60,6 +60,7 @@ CXXFLAGS := $(CXX_STANDARD) \
             $(WARNINGS) \
             $(DEBUG_FLAGS) \
             -I$(INC_DIR) \
+            -Ilib \
             $(PLATFORM_INCLUDES)
 
 # ================================
@@ -109,6 +110,8 @@ directories:
 copy_assets:
 	@echo "Copying assets"
 	@mkdir -p $(BUILD_DIR)/$(ASSETS_DIR)
+	@mkdir -p $(BUILD_DIR)/$(ASSETS_DIR)/users
+	@mkdir -p $(BUILD_DIR)/devtools
 	@if  [ -d "$(ASSETS_DIR)" ] && [ "$$(ls -A $(ASSETS_DIR) 2>/dev/null)" ]; then \
 		cp -r $(ASSETS_DIR)/* $(BUILD_DIR)/$(ASSETS_DIR)/; \
 	else \

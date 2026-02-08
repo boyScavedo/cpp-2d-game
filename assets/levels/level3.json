@@ -1,0 +1,264 @@
+{
+    "entities": [
+        {
+            "collider": {
+                "height": 50.0,
+                "isSolid": true,
+                "isTrigger": false,
+                "offsetX": 0.0,
+                "offsetY": 0.0,
+                "width": 100.0
+            },
+            "id": 0,
+            "sprite": {
+                "textureID": 0,
+                "zIndex": 5
+            },
+            "transform": {
+                "height": 50.0,
+                "width": 100.0,
+                "x": 122.00180053710938,
+                "y": 670.0,
+                "zIndex": 5
+            },
+            "type": "StaticObject"
+        },
+        {
+            "collider": {
+                "height": 50.0,
+                "isSolid": true,
+                "isTrigger": false,
+                "offsetX": 0.0,
+                "offsetY": 0.0,
+                "width": 100.0
+            },
+            "id": 1,
+            "sprite": {
+                "textureID": 0,
+                "zIndex": 5
+            },
+            "transform": {
+                "height": 50.0,
+                "width": 100.0,
+                "x": 248.4015350341797,
+                "y": 605.9984130859375,
+                "zIndex": 5
+            },
+            "type": "StaticObject"
+        },
+        {
+            "collider": {
+                "height": 50.0,
+                "isSolid": true,
+                "isTrigger": false,
+                "offsetX": 0.0,
+                "offsetY": 0.0,
+                "width": 100.0
+            },
+            "id": 2,
+            "sprite": {
+                "textureID": 0,
+                "zIndex": 5
+            },
+            "transform": {
+                "height": 50.0,
+                "width": 100.0,
+                "x": 404.3999938964844,
+                "y": 562.7977905273438,
+                "zIndex": 5
+            },
+            "type": "StaticObject"
+        },
+        {
+            "collider": {
+                "height": 50.0,
+                "isSolid": true,
+                "isTrigger": false,
+                "offsetX": 0.0,
+                "offsetY": 0.0,
+                "width": 100.0
+            },
+            "id": 3,
+            "sprite": {
+                "textureID": 0,
+                "zIndex": 5
+            },
+            "transform": {
+                "height": 50.0,
+                "width": 100.0,
+                "x": 578.7991943359375,
+                "y": 532.7979125976563,
+                "zIndex": 5
+            },
+            "type": "StaticObject"
+        },
+        {
+            "collider": {
+                "height": 50.0,
+                "isSolid": true,
+                "isTrigger": false,
+                "offsetX": 0.0,
+                "offsetY": 0.0,
+                "width": 100.0
+            },
+            "id": 4,
+            "sprite": {
+                "textureID": 0,
+                "zIndex": 5
+            },
+            "transform": {
+                "height": 50.0,
+                "width": 100.0,
+                "x": 768.0008544921875,
+                "y": 530.398193359375,
+                "zIndex": 5
+            },
+            "type": "StaticObject"
+        },
+        {
+            "collider": {
+                "height": 50.0,
+                "isSolid": true,
+                "isTrigger": false,
+                "offsetX": 0.0,
+                "offsetY": 0.0,
+                "width": 100.0
+            },
+            "id": 5,
+            "sprite": {
+                "textureID": 0,
+                "zIndex": 5
+            },
+            "transform": {
+                "height": 50.0,
+                "width": 100.0,
+                "x": 1004.4019775390625,
+                "y": 511.19781494140625,
+                "zIndex": 5
+            },
+            "type": "StaticObject"
+        },
+        {
+            "collider": {
+                "height": 50.0,
+                "isSolid": true,
+                "isTrigger": false,
+                "offsetX": 0.0,
+                "offsetY": 0.0,
+                "width": 100.0
+            },
+            "id": 6,
+            "sprite": {
+                "textureID": 0,
+                "zIndex": 5
+            },
+            "transform": {
+                "height": 50.0,
+                "width": 100.0,
+                "x": 905.6021118164063,
+                "y": 562.3990478515625,
+                "zIndex": 5
+            },
+            "type": "StaticObject"
+        },
+        {
+            "collider": {
+                "height": 50.0,
+                "isSolid": true,
+                "isTrigger": false,
+                "offsetX": 0.0,
+                "offsetY": 0.0,
+                "width": 100.0
+            },
+            "id": 7,
+            "sprite": {
+                "textureID": 0,
+                "zIndex": 5
+            },
+            "transform": {
+                "height": 50.0,
+                "width": 100.0,
+                "x": 1185.6092529296875,
+                "y": 555.9981689453125,
+                "zIndex": 5
+            },
+            "type": "StaticObject"
+        },
+        {
+            "collider": {
+                "height": 50.0,
+                "isSolid": true,
+                "isTrigger": false,
+                "offsetX": 0.0,
+                "offsetY": 0.0,
+                "width": 100.0
+            },
+            "id": 8,
+            "sprite": {
+                "textureID": 0,
+                "zIndex": 5
+            },
+            "transform": {
+                "height": 50.0,
+                "width": 100.0,
+                "x": 400.0,
+                "y": 300.0,
+                "zIndex": 5
+            },
+            "type": "StaticObject"
+        },
+        {
+            "collider": {
+                "height": 50.0,
+                "isSolid": true,
+                "isTrigger": false,
+                "offsetX": 0.0,
+                "offsetY": 0.0,
+                "width": 50.0
+            },
+            "id": 9,
+            "playerControl": {
+                "speed": 600.0
+            },
+            "sprite": {
+                "textureID": 0,
+                "zIndex": 10
+            },
+            "transform": {
+                "height": 50.0,
+                "width": 50.0,
+                "x": 200.0,
+                "y": 300.0,
+                "zIndex": 10
+            },
+            "type": "Player"
+        },
+        {
+            "collider": {
+                "height": 720,
+                "isSolid": false,
+                "isTrigger": true,
+                "offsetX": 0.0,
+                "offsetY": 0.0,
+                "width": 50
+            },
+            "exit": {
+                "direction": "West",
+                "nextLevel": "assets/levels/level2.json",
+                "transitionDuration": 0.5
+            },
+            "id": 10,
+            "transform": {
+                "height": 720,
+                "width": 50,
+                "x": "WORLD_START",
+                "y": 0,
+                "zIndex": 0
+            },
+            "type": "StaticObject"
+        }
+    ],
+    "isLeftWallClamped": false,
+    "isRightWallClamped": true,
+    "levelWidth": 2560.0
+}

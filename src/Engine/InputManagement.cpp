@@ -1,3 +1,8 @@
+/**
+ * @file InputManagement.cpp
+ * @brief Implementation of the InputManager class for handling SDL input events.
+ */
+
 #include "Engine/InputManager.hpp"
 
 /**
@@ -37,8 +42,59 @@ Common::InputState Engine::InputManager::update()
     m_state.right = keys[SDL_SCANCODE_D];
     m_state.jump = keys[SDL_SCANCODE_SPACE];
 
-    SDL_MouseButtonFlags mouseButtons = SDL_GetMouseState(nullptr, nullptr);
-    m_state.attack = (mouseButtons & SDL_BUTTON_MASK(SDL_BUTTON_LEFT)) != 0;
+    // Arrow Keys
+    m_state.arrowUp = keys[SDL_SCANCODE_UP];
+    m_state.arrowDown = keys[SDL_SCANCODE_DOWN];
+    m_state.arrowLeft = keys[SDL_SCANCODE_LEFT];
+    m_state.arrowRight = keys[SDL_SCANCODE_RIGHT];
+
+    // Editor Keys mapping
+    m_state.c = keys[SDL_SCANCODE_C];
+    m_state.backspace = keys[SDL_SCANCODE_BACKSPACE];
+    m_state.enter = keys[SDL_SCANCODE_RETURN] || keys[SDL_SCANCODE_KP_ENTER];
+    m_state.shift = keys[SDL_SCANCODE_LSHIFT] || keys[SDL_SCANCODE_RSHIFT];
+    m_state.ctrl = keys[SDL_SCANCODE_LCTRL] || keys[SDL_SCANCODE_RCTRL];
+    m_state.pause = keys[SDL_SCANCODE_P] || keys[SDL_SCANCODE_ESCAPE];
+
+    float mx, my;
+    SDL_MouseButtonFlags mouseButtons = SDL_GetMouseState(&mx, &my);
+    m_state.mouseX = static_cast<int>(mx);
+    m_state.mouseY = static_cast<int>(my);
+    m_state.mouseLeftDown = (mouseButtons & SDL_BUTTON_MASK(SDL_BUTTON_LEFT)) != 0;
+    m_state.attack = m_state.mouseLeftDown;
+
+    return m_state;
+}
+
+/**
+ * @brief Polls system input with mouse coordinates converted to logical renderer space.
+ *
+ * Performs standard input polling, then converts mouse coordinates from window pixels
+ * to renderer logical coordinates. This ensures accurate mouse interaction with UI elements
+ * and editor tools, accounting for window scaling, fullscreen mode, and coordinate transformations.
+ * Critical for precise entity selection and UI responsiveness.
+ *
+ * @param renderer The SDL_Renderer used for coordinate conversion (can be nullptr).
+ * @return Common::InputState The updated input state with converted mouse coordinates.
+ */
+Common::InputState Engine::InputManager::update(SDL_Renderer *renderer)
+{
+    // First, do all the regular input polling
+    update();
+
+    // Then convert mouse coordinates from window space to logical renderer space
+    if (renderer)
+    {
+        float mx, my;
+        SDL_GetMouseState(&mx, &my);
+
+        float logicalX, logicalY;
+        if (SDL_RenderCoordinatesFromWindow(renderer, mx, my, &logicalX, &logicalY))
+        {
+            m_state.mouseX = static_cast<int>(logicalX);
+            m_state.mouseY = static_cast<int>(logicalY);
+        }
+    }
 
     return m_state;
 }
