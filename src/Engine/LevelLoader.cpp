@@ -1,6 +1,13 @@
 /**
  * @file LevelLoader.cpp
  * @brief Implementation of the LevelLoader class for parsing JSON level data.
+ *
+ * This file provides the concrete implementation of level loading functionality,
+ * converting JSON level definitions into runtime entity objects. It supports
+ * various entity types (players, static objects, background layers) with their
+ * associated components (transform, sprite, physics, colliders, etc.). The loader
+ * includes a flexible dimension resolution system that allows levels to use
+ * symbolic constants for positioning and sizing.
  */
 
 #include "Engine/LevelLoader.hpp"
@@ -18,11 +25,13 @@ namespace Engine
 {
     namespace
     {
-        float resolveDimension(const json& j, const std::string& key, float defaultValue, float entitySize = 0.0f)
+        // Helper function to resolve dimension values from JSON, supporting both numeric and symbolic values
+        float resolveDimension(const json &j, const std::string &key, float defaultValue, float entitySize = 0.0f)
         {
-            if (!j.contains(key)) return defaultValue;
+            if (!j.contains(key))
+                return defaultValue;
 
-            const auto& val = j[key];
+            const auto &val = j[key];
             if (val.is_number())
             {
                 return val.get<float>();
@@ -30,14 +39,22 @@ namespace Engine
             else if (val.is_string())
             {
                 std::string s = val.get<std::string>();
-                if (s == "SCREEN_WIDTH") return static_cast<float>(Common::SCREEN_WIDTH);
-                if (s == "SCREEN_HEIGHT") return static_cast<float>(Common::SCREEN_HEIGHT);
-                if (s == "WORLD_WIDTH") return static_cast<float>(Common::WORLD_WIDTH);
-                if (s == "WORLD_START") return static_cast<float>(Common::WORLD_START);
-                if (s == "WORLD_END") return static_cast<float>(Common::WORLD_WIDTH);
-                if (s == "CENTER_X") return (static_cast<float>(Common::SCREEN_WIDTH) - entitySize) / 2.0f;
-                if (s == "CENTER_Y") return (static_cast<float>(Common::SCREEN_HEIGHT) - entitySize) / 2.0f;
-                if (s == "FLOOR") return static_cast<float>(Common::SCREEN_HEIGHT) - entitySize;
+                if (s == "SCREEN_WIDTH")
+                    return static_cast<float>(Common::SCREEN_WIDTH);
+                if (s == "SCREEN_HEIGHT")
+                    return static_cast<float>(Common::SCREEN_HEIGHT);
+                if (s == "WORLD_WIDTH")
+                    return static_cast<float>(Common::WORLD_WIDTH);
+                if (s == "WORLD_START")
+                    return static_cast<float>(Common::WORLD_START);
+                if (s == "WORLD_END")
+                    return static_cast<float>(Common::WORLD_WIDTH);
+                if (s == "CENTER_X")
+                    return (static_cast<float>(Common::SCREEN_WIDTH) - entitySize) / 2.0f;
+                if (s == "CENTER_Y")
+                    return (static_cast<float>(Common::SCREEN_HEIGHT) - entitySize) / 2.0f;
+                if (s == "FLOOR")
+                    return static_cast<float>(Common::SCREEN_HEIGHT) - entitySize;
             }
             return defaultValue;
         }
@@ -62,6 +79,11 @@ namespace Engine
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "JSON Parse Error in %s: %s", path.c_str(), e.what());
             return false;
         }
+        catch (const std::exception &e)
+        {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error reading level file %s: %s", path.c_str(), e.what());
+            return false;
+        }
 
         // Parse Level Configuration
         entityManager.levelConfig.isLeftWallClamped = levelData.value("isLeftWallClamped", true);
@@ -76,11 +98,16 @@ namespace Engine
                 std::shared_ptr<Gameplay::Entity> entity;
 
                 // Determine entity type
-                if (entityDef.contains("playerControl")) {
+                if (entityDef.contains("playerControl"))
+                {
                     entity = std::make_shared<Gameplay::Player>();
-                } else if (entityDef.contains("parallax")) {
+                }
+                else if (entityDef.contains("parallax"))
+                {
                     entity = std::make_shared<Gameplay::BackgroundLayer>();
-                } else {
+                }
+                else
+                {
                     entity = std::make_shared<Gameplay::StaticObject>();
                 }
 
@@ -88,11 +115,11 @@ namespace Engine
                 if (entityDef.contains("transform"))
                 {
                     const auto &t = entityDef["transform"];
-                    
+
                     // Parse size first to use in position calculation
                     entity->transform.width = resolveDimension(t, "width", 32.0f);
                     entity->transform.height = resolveDimension(t, "height", 32.0f);
-                    
+
                     // Parse position using size (for centering or aligning)
                     entity->transform.x = resolveDimension(t, "x", 0.0f, entity->transform.width);
                     entity->transform.y = resolveDimension(t, "y", 0.0f, entity->transform.height);
@@ -107,9 +134,10 @@ namespace Engine
                     sprite.textureID = static_cast<Common::TextureID>(s.value("textureID", -1));
                     sprite.zIndex = s.value("zIndex", 0);
                     entity->sprite = sprite;
-                    
+
                     // If transform zIndex was not explicitly set, use sprite zIndex
-                    if (!entityDef.contains("transform") || !entityDef["transform"].contains("zIndex")) {
+                    if (!entityDef.contains("transform") || !entityDef["transform"].contains("zIndex"))
+                    {
                         entity->transform.zIndex = sprite.zIndex;
                     }
                 }
@@ -123,8 +151,8 @@ namespace Engine
                     physics.velocityY = p.value("velocityY", 0.0f);
                     entity->physics = physics;
                 }
-                
-                 // 4. Parallax Component
+
+                // 4. Parallax Component
                 if (entityDef.contains("parallax"))
                 {
                     const auto &p = entityDef["parallax"];
@@ -161,12 +189,16 @@ namespace Engine
                 {
                     const auto &e = entityDef["exit"];
                     Gameplay::LevelExit exit;
-                    
+
                     std::string dirStr = e.value("direction", "East");
-                    if (dirStr == "North") exit.direction = Gameplay::CardinalDirection::North;
-                    else if (dirStr == "South") exit.direction = Gameplay::CardinalDirection::South;
-                    else if (dirStr == "West") exit.direction = Gameplay::CardinalDirection::West;
-                    else exit.direction = Gameplay::CardinalDirection::East;
+                    if (dirStr == "North")
+                        exit.direction = Gameplay::CardinalDirection::North;
+                    else if (dirStr == "South")
+                        exit.direction = Gameplay::CardinalDirection::South;
+                    else if (dirStr == "West")
+                        exit.direction = Gameplay::CardinalDirection::West;
+                    else
+                        exit.direction = Gameplay::CardinalDirection::East;
 
                     exit.nextLevelPath = e.value("nextLevel", "");
                     exit.transitionDuration = e.value("transitionDuration", 0.5f);
@@ -176,7 +208,7 @@ namespace Engine
                 entityManager.addEntity(entity);
             }
         }
-        
+
         SDL_Log("Level loaded successfully: %s", path.c_str());
         return true;
     }

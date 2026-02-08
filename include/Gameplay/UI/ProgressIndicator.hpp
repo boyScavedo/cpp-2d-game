@@ -31,10 +31,15 @@ namespace Gameplay
             void update(float playerX, float worldWidth);
 
             /**
-             * @brief Adds the necessary render commands to the frame's command list.
-             * @param commands The vector of render commands to append to.
+             * @brief Renders the progress bar as render commands.
+             *
+             * Generates render commands to draw the progress bar background and fill.
+             * The bar consists of a background rectangle and a filled portion representing
+             * current progress. Commands are appended to the provided vector for batch processing.
+             *
+             * @param commands Vector of render commands to append progress bar elements to.
              */
-            void render(std::vector<Common::RenderCommand>& commands) const;
+            void render(std::vector<Common::RenderCommand> &commands) const;
 
         private:
             float m_x, m_y;

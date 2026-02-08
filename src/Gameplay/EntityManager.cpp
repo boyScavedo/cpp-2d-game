@@ -1,3 +1,13 @@
+/**
+ * @file EntityManager.cpp
+ * @brief Implementation of the EntityManager class for managing game entities and their components.
+ *
+ * This file provides the concrete implementation of the entity-component system,
+ * handling entity lifecycle, component updates, collision detection, and serialization.
+ * The EntityManager acts as the central hub for all game objects, coordinating
+ * their behavior and interactions within the game world.
+ */
+
 #include "Common/Types.hpp"
 #include "Gameplay/EntityManager.hpp"
 #include "nlohmann/json.hpp"
@@ -7,13 +17,16 @@ using json = nlohmann::json;
 
 namespace Gameplay
 {
-    void EntityManager::update(float deltaTime, const Common::InputState& input)
+    void EntityManager::update(float deltaTime, const Common::InputState &input)
     {
-        for (auto& entity : m_entities) {
-            if (entity->isDestroyed) continue;
+        for (auto &entity : m_entities)
+        {
+            if (entity->isDestroyed)
+                continue;
 
             // Handle player input separately
-            if (auto player = std::dynamic_pointer_cast<Player>(entity)) {
+            if (auto player = std::dynamic_pointer_cast<Player>(entity))
+            {
                 player->handleInput(input);
             }
 
@@ -21,23 +34,29 @@ namespace Gameplay
             entity->update(deltaTime);
 
             // World Bound Constraints (Floor)
-            if (entity->physics) {
-                if (entity->transform.y > Common::SCREEN_HEIGHT - entity->transform.height) {
+            if (entity->physics)
+            {
+                if (entity->transform.y > Common::SCREEN_HEIGHT - entity->transform.height)
+                {
                     entity->transform.y = Common::SCREEN_HEIGHT - entity->transform.height;
                     entity->physics->velocityY = 0;
                     entity->physics->isGrounded = true;
-                } else {
+                }
+                else
+                {
                     entity->physics->isGrounded = false;
                 }
 
                 // Wall Collision (Left)
-                if (levelConfig.isLeftWallClamped && entity->transform.x < 0) {
+                if (levelConfig.isLeftWallClamped && entity->transform.x < 0)
+                {
                     entity->transform.x = 0;
                     entity->physics->velocityX = 0;
                 }
 
                 // Wall Collision (Right)
-                if (levelConfig.isRightWallClamped && entity->transform.x > levelConfig.levelWidth - entity->transform.width) {
+                if (levelConfig.isRightWallClamped && entity->transform.x > levelConfig.levelWidth - entity->transform.width)
+                {
                     entity->transform.x = levelConfig.levelWidth - entity->transform.width;
                     entity->physics->velocityX = 0;
                 }
@@ -47,27 +66,28 @@ namespace Gameplay
         // Remove destroyed entities
         m_entities.erase(
             std::remove_if(m_entities.begin(), m_entities.end(),
-                [](const std::shared_ptr<Entity>& e) { return e->isDestroyed; }),
-            m_entities.end()
-        );
+                           [](const std::shared_ptr<Entity> &e)
+                           { return e->isDestroyed; }),
+            m_entities.end());
     }
 
-    void EntityManager::render(std::vector<Common::RenderCommand>& commands)
+    void EntityManager::render(std::vector<Common::RenderCommand> &commands)
     {
         // Sort entities by zIndex before rendering
         auto sortedEntities = m_entities;
-        std::sort(sortedEntities.begin(), sortedEntities.end(), [](const std::shared_ptr<Entity>& a, const std::shared_ptr<Entity>& b) {
-            return a->transform.zIndex < b->transform.zIndex;
-        });
+        std::sort(sortedEntities.begin(), sortedEntities.end(), [](const std::shared_ptr<Entity> &a, const std::shared_ptr<Entity> &b)
+                  { return a->transform.zIndex < b->transform.zIndex; });
 
-        for (auto& entity : sortedEntities) {
+        for (auto &entity : sortedEntities)
+        {
             entity->render(commands);
         }
     }
 
     void EntityManager::addEntity(std::shared_ptr<Entity> entity)
     {
-        if (entity->id == -1) {
+        if (entity->id == -1)
+        {
             entity->id = m_nextEntityID++;
         }
         m_entities.push_back(entity);
@@ -80,8 +100,10 @@ namespace Gameplay
 
     std::shared_ptr<Player> EntityManager::getPlayer() const
     {
-        for (const auto& entity : m_entities) {
-            if (auto player = std::dynamic_pointer_cast<Player>(entity)) {
+        for (const auto &entity : m_entities)
+        {
+            if (auto player = std::dynamic_pointer_cast<Player>(entity))
+            {
                 return player;
             }
         }
@@ -91,7 +113,8 @@ namespace Gameplay
     std::optional<LevelExit> EntityManager::checkCollisions()
     {
         auto player = getPlayer();
-        if (!player || !player->collider) return std::nullopt;
+        if (!player || !player->collider)
+            return std::nullopt;
 
         std::optional<LevelExit> exitTriggered = std::nullopt;
 
@@ -100,9 +123,12 @@ namespace Gameplay
         float pTop = player->transform.y + player->collider->offsetY;
         float pBottom = pTop + player->collider->height;
 
-        for (const auto& entity : m_entities) {
-            if (entity == player) continue;
-            if (!entity->collider) continue;
+        for (const auto &entity : m_entities)
+        {
+            if (entity == player)
+                continue;
+            if (!entity->collider)
+                continue;
 
             float oLeft = entity->transform.x + entity->collider->offsetX;
             float oRight = oLeft + entity->collider->width;
@@ -113,33 +139,47 @@ namespace Gameplay
             bool collision = (pLeft < oRight && pRight > oLeft &&
                               pTop < oBottom && pBottom > oTop);
 
-            if (collision) {
+            if (collision)
+            {
                 // Handle Level Exits
-                if (entity->exit) {
+                if (entity->exit)
+                {
                     exitTriggered = entity->exit;
                 }
 
                 // Handle Solid Collisions (Resolution)
-                if (entity->collider->isSolid) {
+                if (entity->collider->isSolid)
+                {
                     float overlapX = std::min(pRight - oLeft, oRight - pLeft);
                     float overlapY = std::min(pBottom - oTop, oBottom - pTop);
 
-                    if (overlapX < overlapY) {
+                    if (overlapX < overlapY)
+                    {
                         // Resolve on X axis
-                        if (pLeft < oLeft) player->transform.x -= overlapX;
-                        else player->transform.x += overlapX;
-                        if (player->physics) player->physics->velocityX = 0;
-                    } else {
+                        if (pLeft < oLeft)
+                            player->transform.x -= overlapX;
+                        else
+                            player->transform.x += overlapX;
+                        if (player->physics)
+                            player->physics->velocityX = 0;
+                    }
+                    else
+                    {
                         // Resolve on Y axis
-                        if (pTop < oTop) {
+                        if (pTop < oTop)
+                        {
                             player->transform.y -= overlapY;
-                            if (player->physics) {
+                            if (player->physics)
+                            {
                                 player->physics->velocityY = 0;
                                 player->physics->isGrounded = true;
                             }
-                        } else {
+                        }
+                        else
+                        {
                             player->transform.y += overlapY;
-                            if (player->physics) player->physics->velocityY = 0;
+                            if (player->physics)
+                                player->physics->velocityY = 0;
                         }
                     }
                     // Re-calculate p bounds for next entity check
@@ -158,8 +198,7 @@ namespace Gameplay
     {
         m_entities.erase(
             std::remove(m_entities.begin(), m_entities.end(), entity),
-            m_entities.end()
-        );
+            m_entities.end());
     }
 
     void EntityManager::removeEntity(int entityID)
@@ -173,78 +212,99 @@ namespace Gameplay
 
     std::string EntityManager::toJSON() const
     {
-        nlohmann::json levelData;
-        levelData["isLeftWallClamped"] = levelConfig.isLeftWallClamped;
-        levelData["isRightWallClamped"] = levelConfig.isRightWallClamped;
-        levelData["levelWidth"] = levelConfig.levelWidth;
+        try
+        {
+            nlohmann::json levelData;
+            levelData["isLeftWallClamped"] = levelConfig.isLeftWallClamped;
+            levelData["isRightWallClamped"] = levelConfig.isRightWallClamped;
+            levelData["levelWidth"] = levelConfig.levelWidth;
 
-        levelData["entities"] = nlohmann::json::array();
-        for (const auto& entity : m_entities) {
-            nlohmann::json e;
-            
-            // Type identification
-            if (std::dynamic_pointer_cast<Player>(entity)) e["type"] = "Player";
-            else if (std::dynamic_pointer_cast<BackgroundLayer>(entity)) e["type"] = "Background";
-            else e["type"] = "StaticObject";
+            levelData["entities"] = nlohmann::json::array();
+            for (const auto &entity : m_entities)
+            {
+                nlohmann::json e;
 
-            e["id"] = entity->id;
+                // Type identification
+                if (std::dynamic_pointer_cast<Player>(entity))
+                    e["type"] = "Player";
+                else if (std::dynamic_pointer_cast<BackgroundLayer>(entity))
+                    e["type"] = "Background";
+                else
+                    e["type"] = "StaticObject";
 
-            // Transform
-            e["transform"] = {
-                {"x", entity->transform.x},
-                {"y", entity->transform.y},
-                {"width", entity->transform.width},
-                {"height", entity->transform.height},
-                {"zIndex", entity->transform.zIndex}
-            };
+                e["id"] = entity->id;
 
-            // Sprite
-            if (entity->sprite) {
-                e["sprite"] = {
-                    {"textureID", static_cast<int>(entity->sprite->textureID)},
-                    {"zIndex", entity->sprite->zIndex}
-                };
+                // Transform
+                e["transform"] = {
+                    {"x", entity->transform.x},
+                    {"y", entity->transform.y},
+                    {"width", entity->transform.width},
+                    {"height", entity->transform.height},
+                    {"zIndex", entity->transform.zIndex}};
+
+                // Sprite
+                if (entity->sprite)
+                {
+                    e["sprite"] = {
+                        {"textureID", static_cast<int>(entity->sprite->textureID)},
+                        {"zIndex", entity->sprite->zIndex}};
+                }
+
+                // Physics
+                if (entity->physics)
+                {
+                    e["physics"] = {
+                        {"velocityX", entity->physics->velocityX},
+                        {"velocityY", entity->physics->velocityY}};
+                }
+
+                // Collider
+                if (entity->collider)
+                {
+                    e["collider"] = {
+                        {"width", entity->collider->width},
+                        {"height", entity->collider->height},
+                        {"offsetX", entity->collider->offsetX},
+                        {"offsetY", entity->collider->offsetY},
+                        {"isSolid", entity->collider->isSolid},
+                        {"isTrigger", entity->collider->isTrigger}};
+                }
+
+                // Component data
+                if (entity->playerControl)
+                {
+                    e["playerControl"] = {
+                        {"speed", entity->playerControl->speed}};
+                }
+                if (entity->parallax)
+                {
+                    e["parallax"] = {
+                        {"factor", entity->parallax->factor}};
+                }
+                if (entity->exit)
+                {
+                    std::string dir = "East";
+                    if (entity->exit->direction == CardinalDirection::West)
+                        dir = "West";
+                    else if (entity->exit->direction == CardinalDirection::North)
+                        dir = "North";
+                    else if (entity->exit->direction == CardinalDirection::South)
+                        dir = "South";
+
+                    e["exit"] = {
+                        {"direction", dir},
+                        {"nextLevel", entity->exit->nextLevelPath},
+                        {"transitionDuration", entity->exit->transitionDuration}};
+                }
+
+                levelData["entities"].push_back(e);
             }
 
-            // Collider
-            if (entity->collider) {
-                e["collider"] = {
-                    {"width", entity->collider->width},
-                    {"height", entity->collider->height},
-                    {"offsetX", entity->collider->offsetX},
-                    {"offsetY", entity->collider->offsetY},
-                    {"isSolid", entity->collider->isSolid},
-                    {"isTrigger", entity->collider->isTrigger}
-                };
-            }
-
-            // Component data
-            if (entity->playerControl) {
-                e["playerControl"] = {
-                    {"speed", entity->playerControl->speed}
-                };
-            }
-            if (entity->parallax) {
-                e["parallax"] = {
-                    {"factor", entity->parallax->factor}
-                };
-            }
-            if (entity->exit) {
-                std::string dir = "East";
-                if (entity->exit->direction == CardinalDirection::West) dir = "West";
-                else if (entity->exit->direction == CardinalDirection::North) dir = "North";
-                else if (entity->exit->direction == CardinalDirection::South) dir = "South";
-
-                e["exit"] = {
-                    {"direction", dir},
-                    {"nextLevel", entity->exit->nextLevelPath},
-                    {"transitionDuration", entity->exit->transitionDuration}
-                };
-            }
-
-            levelData["entities"].push_back(e);
+            return levelData.dump(4);
         }
-
-        return levelData.dump(4);
+        catch (const std::exception &e)
+        {
+            return "{}"; // Return empty JSON on error
+        }
     }
 }

@@ -1,0 +1,2 @@
+- [x] Modify main.cpp to save the new level to both build/assets/levels/ and assets/levels/
+- [x] Test the level saving functionality
